@@ -1,0 +1,20 @@
+#######################################
+# PicoCamera keywords
+#######################################
+
+PicoCamera.h	KEYWORD1
+pico_camera_init	KEYWORD2
+pico_camera_deinit	KEYWORD2
+pico_camera_fb_get	KEYWORD2
+pico_camera_fb_return	KEYWORD2
+pico_camera_sensor_get	KEYWORD2
+camera_config_t	KEYWORD1
+camera_fb_t	KEYWORD1
+sensor_t	KEYWORD1
+framesize_t	KEYWORD1
+pixformat_t	KEYWORD1
+PIXFORMAT_RGB565	LITERAL1
+PIXFORMAT_JPEG	LITERAL1
+FRAMESIZE_QVGA	LITERAL1
+FRAMESIZE_VGA	LITERAL1
+FRAMESIZE_UXGA	LITERAL1

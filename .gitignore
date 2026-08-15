@@ -1,0 +1,27 @@
+# PlatformIO / build artifacts (matches at any depth)
+.pio/
+.vscode/
+*.uf2
+*.elf
+*.bin
+*.bin.signed
+*.map
+*.a
+*.o
+
+# Local build-test scaffold
+.buildtest/.pio/
+
+# Local reference copies (not shipped)
+.reff/
+.buildtest/
+
+# Python (pio scripts etc.)
+__pycache__/
+*.pyc
+
+# Editors / OS
+.idea/
+*.swp
+Thumbs.db
+.DS_Store
