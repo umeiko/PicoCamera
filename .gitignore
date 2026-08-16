@@ -20,6 +20,9 @@
 __pycache__/
 *.pyc
 
+# Docs build artifacts
+docs/_build/
+
 # Editors / OS
 .idea/
 *.swp

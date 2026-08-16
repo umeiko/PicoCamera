@@ -1,0 +1,9 @@
+# Chinese variant of the API docs. Built into html/zh/ alongside the
+# English build; overrides are applied after including the base config.
+@INCLUDE = Doxyfile
+
+OUTPUT_LANGUAGE        = Chinese
+INPUT                  = ../src ../readme_cn.md ../docs/user_guide_zh.md ../docs/user_guide.md
+USE_MDFILE_AS_MAINPAGE = ../readme_cn.md
+HTML_OUTPUT            = html/zh
+HTML_FOOTER            = footer_zh.html

@@ -1,0 +1,68 @@
+name: Deploy API Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'docs/**'
+      - 'readme.md'
+      - 'readme_cn.md'
+      - 'library.properties'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install doxygen 1.18.0 and graphviz
+        # Pin doxygen to 1.18.0: docs/header.html is generated from this
+        # version's template; the apt version is too old and leaves
+        # template variables ($mermaidjs etc.) unsubstituted.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+          curl -sSfL -o /tmp/doxygen.tar.gz \
+            https://www.doxygen.nl/files/doxygen-1.18.0.linux.bin.tar.gz
+          sudo tar -xzf /tmp/doxygen.tar.gz -C /opt
+          echo "/opt/doxygen-1.18.0/bin" >> "$GITHUB_PATH"
+
+      - name: Build documentation (English + Chinese)
+        run: |
+          cd docs
+          doxygen Doxyfile
+          doxygen Doxyfile_zh
+
+      - name: Copy images referenced by raw <img> tags in the readmes
+        run: |
+          mkdir -p docs/_build/html/docs docs/_build/html/zh/docs
+          cp docs/*.png docs/_build/html/docs/
+          cp docs/*.png docs/_build/html/zh/docs/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,55 @@
+# Doxyfile for PicoCamera API documentation.
+# Run from the docs/ directory:  cd docs && doxygen Doxyfile
+# The doxygen-awesome theme (v2.3.4) is vendored next to this file:
+#   doxygen-awesome.css, doxygen-awesome-sidebar-only.css
+
+PROJECT_NAME           = "PicoCamera"
+PROJECT_NUMBER         = 0.2.0
+PROJECT_BRIEF          = "Camera library for RP2040 with an esp32-camera compatible API"
+PROJECT_LOGO           = ../docs/image_project_logo.png
+
+OUTPUT_DIRECTORY       = _build
+OUTPUT_LANGUAGE        = English
+
+# Sources: public headers + internal drivers; readme as main page.
+# readme_cn.md and the user guide are included so markdown links to them
+# from the main page resolve to real pages instead of dead ends.
+INPUT                  = ../src ../readme.md ../readme_cn.md ../docs/user_guide.md ../docs/user_guide_zh.md
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = ../readme.md
+IMAGE_PATH             = ../
+
+# Only include documented entities (headers already use Doxygen comments)
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+
+# C sources are really C-friendly; .cpp internals documented as-is
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+# HTML output
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+HTML_COLORSTYLE        = LIGHT
+HTML_EXTRA_STYLESHEET  = doxygen-awesome.css doxygen-awesome-sidebar-only.css custom.css
+HTML_HEADER            = header.html
+HTML_FOOTER            = footer.html
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+SEARCHENGINE           = YES
+
+# No LaTeX / other formats
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+
+# Inheritance/collaboration diagrams via graphviz (installed in CI)
+HAVE_DOT               = YES
+DOT_IMAGE_FORMAT       = svg
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_DOC_ERROR      = YES

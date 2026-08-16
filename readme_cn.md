@@ -4,6 +4,10 @@
   <img src="docs/image_project_logo.png" width="220" alt="PicoCamera logo">
 </p>
 
+[English](https://github.com/umeiko/PicoCamera/blob/main/readme.md) · **中文**
+
+📖 **在线文档：** [中文](https://umeiko.github.io/PicoCamera/zh/) · [English](https://umeiko.github.io/PicoCamera/)
+
 RP2040 摄像头库，API 与 [esp32-camera](https://github.com/espressif/esp32-camera) 对齐（`esp_` 前缀换成 `pico_`），基于 PIO + DMA 采集。
 
 - 所有引脚（含 VSYNC/HREF/PCLK/数据线）都在 `camera_config_t` 里运行时配置，无需修改 PIO 源码
@@ -24,10 +28,28 @@ RP2040 摄像头库，API 与 [esp32-camera](https://github.com/espressif/esp32-
 
 ## 安装
 
-- **Arduino IDE**：把本仓库放入 `Arduino/libraries/`，或打包为 zip 通过「添加 .ZIP 库」安装
-- **PlatformIO**：`lib_deps = https://github.com/umeiko/PicoCamera.git`（或本地 `file://` 路径）
+### Arduino IDE
 
-需要 earlephilhower 的 [arduino-pico](https://github.com/earlephilhower/arduino-pico) 核心。
+PicoCamera 已上架 Arduino 库管理器：打开 **工具 → 管理库...**（或 速写 → 包含库 → 管理库），搜索 **PicoCamera** 点击安装即可。
+
+<p align="center">
+  <img src="docs/image_arduino_lib.png" width="560" alt="Arduino 库管理器中的 PicoCamera">
+</p>
+
+也可以手动安装：把本仓库放入 `Arduino/libraries/`，或打包为 zip 通过「添加 .ZIP 库」安装。
+
+### PlatformIO
+
+PicoCamera 已上架 [PlatformIO Registry](https://registry.platformio.org/libraries/umeiko/PicoCamera)：
+
+```ini
+lib_deps =
+    umeiko/PicoCamera@^0.2.0
+```
+
+也可以直接用 git 地址（`lib_deps = https://github.com/umeiko/PicoCamera.git`）或本地 `file://` 路径。
+
+两者都需要 earlephilhower 的 [arduino-pico](https://github.com/earlephilhower/arduino-pico) 核心。
 
 ## 快速开始
 
@@ -81,16 +103,16 @@ if (s) {
 ## 与 esp32-camera 的差异
 
 - 数据引脚 `pin_d0..pin_d7` 必须是 **8 个连续 GPIO**（PIO `in pins` 指令的硬件限制），初始化时会校验
-- 无 PSRAM 概念，帧缓冲在 SRAM（264KB）。RGB565 建议 ≤ VGA(640x480, 600KB 超 SRAM，实际 QVGA 较稳）；JPEG 缓冲按 `宽×高/4 + 8KB` 估算
+- 无 PSRAM 概念，帧缓冲在 SRAM（264KB）。RGB565 建议 ≤ VGA（640x480, 600KB 超 SRAM，实际 QVGA 较稳）；JPEG 缓冲按 `宽×高/4 + 8KB` 估算
 - 暂不支持 `grab_mode`：`pico_camera_fb_get()` 是阻塞单帧语义（等价 `CAMERA_GRAB_WHEN_EMPTY`），每次调用同步等下一帧
 
 ## 示例
 
-- `examples/CameraSerialInfo` — 探测传感器并打印信息
-- `examples/CameraCaptureRGB565` — RGB565 抓帧
-- `examples/CameraCaptureJPEG` — JPEG 抓帧（含 SOI/EOI 完整性检查）
-- `examples/camera_render_to_tft` — 通过 TFT_eSPI 在 TFT 屏上实时预览（需先自行配置 TFT_eSPI）
-- `examples/push_image_to_python` — 通过 USB 串口把帧推送给 Python(tkinter）上位机查看器
+- [CameraSerialInfo](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraSerialInfo) — 探测传感器并打印信息
+- [CameraCaptureRGB565](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraCaptureRGB565) — RGB565 抓帧
+- [CameraCaptureJPEG](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraCaptureJPEG) — JPEG 抓帧（含 SOI/EOI 完整性检查）
+- [camera_render_to_tft](https://github.com/umeiko/PicoCamera/tree/main/examples/camera_render_to_tft) — 通过 TFT_eSPI 在 TFT 屏上实时预览（需先自行配置 TFT_eSPI）
+- [push_image_to_python](https://github.com/umeiko/PicoCamera/tree/main/examples/push_image_to_python) — 通过 USB 串口把帧推送给 Python（tkinter）上位机查看器
 
 <p align="center">
   <img src="docs/image_capture.png" width="360" alt="push_image_to_python 上位机截图">
@@ -100,10 +122,8 @@ if (s) {
 
 ## 文档
 
-- 架构设计与路线图：`ARCHITECTURE.md`
-- OV2640 寄存器速查：`docs/ov2640_registers.md`
-- OV7670 寄存器速查：`docs/ov7670_registers.md`
-- 早期驱动调试笔记：`docs/ov2640_dev_notes.md`
+- [使用指南](docs/user_guide_zh.md) — 配置项、取帧流程、`camera_fb_t` 与 `sensor_t` 详解（[English](docs/user_guide.md)）
+- 完整 API 参考：<https://umeiko.github.io/PicoCamera/zh/>
 
 ## 许可证
 

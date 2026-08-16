@@ -4,7 +4,9 @@
   <img src="docs/image_project_logo.png" width="220" alt="PicoCamera logo">
 </p>
 
-**[中文文档](readme_cn.md)**
+**English** · [中文](readme_cn.md)
+
+📖 **Documentation:** [English](https://umeiko.github.io/PicoCamera/) · [中文](https://umeiko.github.io/PicoCamera/zh/)
 
 A camera library for RP2040 with an API aligned with [esp32-camera](https://github.com/espressif/esp32-camera) (`esp_` prefix becomes `pico_`), based on PIO + DMA capture.
 
@@ -26,10 +28,28 @@ For sensor controls (`sensor->set_vflip` etc.), OV2640 is fairly complete (vflip
 
 ## Installation
 
-- **Arduino IDE**: put this repository into `Arduino/libraries/`, or zip it and use "Add .ZIP Library"
-- **PlatformIO**: `lib_deps = https://github.com/umeiko/PicoCamera.git` (or a local `file://` path)
+### Arduino IDE
 
-Requires the earlephilhower [arduino-pico](https://github.com/earlephilhower/arduino-pico) core.
+PicoCamera is published in the Arduino Library Manager: open **Sketch → Include Library → Manage Libraries...**, search for **PicoCamera** and click **Install**.
+
+<p align="center">
+  <img src="docs/image_arduino_lib.png" width="560" alt="PicoCamera in the Arduino Library Manager">
+</p>
+
+Manual install also works: put this repository into `Arduino/libraries/`, or zip it and use "Add .ZIP Library".
+
+### PlatformIO
+
+PicoCamera is published in the [PlatformIO Registry](https://registry.platformio.org/libraries/umeiko/PicoCamera):
+
+```ini
+lib_deps =
+    umeiko/PicoCamera@^0.2.0
+```
+
+A git URL (`lib_deps = https://github.com/umeiko/PicoCamera.git`) or a local `file://` path works too.
+
+Both require the earlephilhower [arduino-pico](https://github.com/earlephilhower/arduino-pico) core.
 
 ## Quick start
 
@@ -88,11 +108,11 @@ if (s) {
 
 ## Examples
 
-- `examples/CameraSerialInfo` — detect the sensor and print its info
-- `examples/CameraCaptureRGB565` — RGB565 capture
-- `examples/CameraCaptureJPEG` — JPEG capture (with SOI/EOI integrity check)
-- `examples/camera_render_to_tft` — live preview on a TFT display via TFT_eSPI
-- `examples/push_image_to_python` — stream frames over USB serial to a Python (tkinter) viewer
+- [CameraSerialInfo](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraSerialInfo) — detect the sensor and print its info
+- [CameraCaptureRGB565](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraCaptureRGB565) — RGB565 capture
+- [CameraCaptureJPEG](https://github.com/umeiko/PicoCamera/tree/main/examples/CameraCaptureJPEG) — JPEG capture (with SOI/EOI integrity check)
+- [camera_render_to_tft](https://github.com/umeiko/PicoCamera/tree/main/examples/camera_render_to_tft) — live preview on a TFT display via TFT_eSPI
+- [push_image_to_python](https://github.com/umeiko/PicoCamera/tree/main/examples/push_image_to_python) — stream frames over USB serial to a Python (tkinter) viewer
 
 <p align="center">
   <img src="docs/image_capture.png" width="360" alt="push_image_to_python host viewer">
@@ -102,10 +122,8 @@ if (s) {
 
 ## Documentation
 
-- Architecture and roadmap: `ARCHITECTURE.md` (Chinese)
-- OV2640 register reference: `docs/ov2640_registers.md` (Chinese)
-- OV7670 register reference: `docs/ov7670_registers.md` (Chinese)
-- Early driver debug notes: `docs/ov2640_dev_notes.md` (Chinese)
+- [User guide](docs/user_guide.md) — configuration, capture workflow, `camera_fb_t` and `sensor_t` reference（[中文版](docs/user_guide_zh.md)）
+- Full API reference: <https://umeiko.github.io/PicoCamera/>
 
 ## License
 
