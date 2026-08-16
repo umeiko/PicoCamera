@@ -8,8 +8,10 @@ pico_camera_deinit	KEYWORD2
 pico_camera_fb_get	KEYWORD2
 pico_camera_fb_return	KEYWORD2
 pico_camera_sensor_get	KEYWORD2
+pico_camera_sensor_info_get	KEYWORD2
 camera_config_t	KEYWORD1
 camera_fb_t	KEYWORD1
+camera_sensor_info_t	KEYWORD1
 sensor_t	KEYWORD1
 framesize_t	KEYWORD1
 pixformat_t	KEYWORD1

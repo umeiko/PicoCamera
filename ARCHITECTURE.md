@@ -1,6 +1,6 @@
 # PicoCamera 架构设计
 
-> 状态：阶段 0-4 已完成并硬件验证通过（OV2640/OV3660 × RGB565/JPEG）。阶段 5（发布收尾）进行中。
+> 状态：阶段 0-4 已完成并硬件验证通过（OV2640/OV3660 × RGB565/JPEG）；库已发布至 GitHub。OV7670 已完成（RGB565,无 JPEG）并硬件验证通过。
 
 ## 0. 目标与已确认决策
 
@@ -32,7 +32,8 @@ PicoCamera/                        # 仓库根
 │       ├── ov2640.h / .cpp
 │       ├── ov2640_regs.h          # 现有寄存器定义迁移
 │       ├── ov2640_settings.h      # 现有初始化序列表迁移
-│       └── ov3660.h / .cpp + regs/settings   # 阶段4 补充
+│       ├── ov3660.h / .cpp + regs/settings   # 阶段4 补充
+│       └── ov7670.h / .cpp + regs            # 无 JPEG 型号,验证 support_jpeg 报错路径
 └── examples/
     ├── CameraSerialInfo/          # 初始化 + 打印检测到的 sensor 信息
     ├── CameraCaptureRGB565/       # 抓帧并通过串口/自定义回调消费
@@ -89,6 +90,8 @@ sensor_t *pico_camera_sensor_get(void);
 
 传感器探测：仿照 esp32 的 `camera_sensor[]` 表，每个型号注册 `{sccb_addr, pid, 8/16位地址模式, 检测+初始化入口}`。`pico_camera_init` 流程：XCLK → 复位 → 遍历探测表读 PID → 命中后调用该 sensor 的 `init(sensor_t*)` 填充函数指针 → `set_pixformat` / `set_framesize` 应用 config。OV2640（8 位寄存器地址）与 OV3660（16 位地址）的差异由 sccb 层吸收。
 
+**能力检查（esp32-camera 对齐，随 OV7670 引入）**：探测命中后、分配缓冲前，按 `camera_sensor_info_t` 校验请求是否超出传感器能力——`pixel_format == JPEG && !support_jpeg` 时打日志并返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`(esp32 对应 `ESP_ERR_NOT_SUPPORTED`);`frame_size > max_size` 时告警并钳位到最大值（不报错）。传感器自身的 `set_pixformat` 对不支持的格式仍返回 -1，作为第二道防线。
+
 ## 3. 关键技术方案
 
 ### 3.1 运行时 PIO 引脚（消除短板）——不用 pioasm，手工编码指令
@@ -143,6 +146,7 @@ sensor_t *pico_camera_sensor_get(void);
 | 3 | JPEG 捕获 | PIXFORMAT_JPEG 抓帧，FFD8...FFD9 完整 |
 | 4 | OV3660（寄存器表移植自 esp32-camera 的 `ov3660_*`） | 探测 + 抓帧 |
 | 5 | 三个 examples 完善、README（接线图/API 说明/与 esp32-camera 差异）、发布准备 | 全新环境 clone 可用 |
+| 6 | OV7670（寄存器表移植自 esp32-camera 的 `ov7670_*`；无 JPEG，引入 support_jpeg 能力检查） | 探测 + RGB565 抓帧（已硬件验证） |
 
 ## 5. 明确不做（本期）
 

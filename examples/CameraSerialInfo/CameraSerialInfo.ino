@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * CameraSerialInfo - detect the connected sensor and print its info.
  *

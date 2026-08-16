@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * push_image_to_python - stream camera frames over USB serial.
  *
@@ -9,6 +17,7 @@
  * push_image_to_python.py on the PC to view the stream.
  *
  * Wiring: see CameraSerialInfo.
+ * The python reciver script: https://github.com/umeiko/PicoCamera/blob/main/examples/push_image_to_python/push_image_to_python.py
  */
 
 #include <PicoCamera.h>

@@ -16,8 +16,11 @@ RP2040 摄像头库，API 与 [esp32-camera](https://github.com/espressif/esp32-
 |--------|--------|------|------|
 | OV2640 | ✅ | ✅ | 已硬件验证 |
 | OV3660 | ✅ | ✅ | 已硬件验证 |
+| OV7670 | ✅ | ❌（无编码器） | 已硬件验证 |
 
-传感器控制（`sensor->set_vflip` 等）：OV2640 较完整（翻转/镜像/亮度/对比度/饱和度/白平衡/曝光/特效/质量……）；OV3660 目前实现了 vflip/hmirror/framesize/pixformat，更多按需补充。
+传感器控制（`sensor->set_vflip` 等）：OV2640 较完整（翻转/镜像/亮度/对比度/饱和度/白平衡/曝光/特效/质量……）；OV3660 目前实现了 vflip/hmirror/framesize/pixformat;OV7670 实现了 vflip/hmirror/白平衡/增益/曝光/彩条，更多按需补充。
+
+**对无 JPEG 编码器的传感器（如 OV7670）请求 JPEG**,`pico_camera_init()` 会返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`——与 esp32-camera 行为一致。`frame_size` 超过传感器上限时不报错，告警并钳位到最大值。
 
 ## 安装
 
@@ -99,6 +102,7 @@ if (s) {
 
 - 架构设计与路线图：`ARCHITECTURE.md`
 - OV2640 寄存器速查：`docs/ov2640_registers.md`
+- OV7670 寄存器速查：`docs/ov7670_registers.md`
 - 早期驱动调试笔记：`docs/ov2640_dev_notes.md`
 
 ## 许可证

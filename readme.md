@@ -18,8 +18,11 @@ A camera library for RP2040 with an API aligned with [esp32-camera](https://gith
 |--------|--------|------|--------|
 | OV2640 | ✅ | ✅ | Verified on hardware |
 | OV3660 | ✅ | ✅ | Verified on hardware |
+| OV7670 | ✅ | ❌ (no encoder) | Verified on hardware |
 
-For sensor controls (`sensor->set_vflip` etc.), OV2640 is fairly complete (vflip/hmirror/brightness/contrast/saturation/white balance/exposure/effects/quality...); OV3660 currently implements vflip/hmirror/framesize/pixformat, more on demand.
+For sensor controls (`sensor->set_vflip` etc.), OV2640 is fairly complete (vflip/hmirror/brightness/contrast/saturation/white balance/exposure/effects/quality...); OV3660 currently implements vflip/hmirror/framesize/pixformat, OV7670 implements vflip/hmirror/whitebal/gain/exposure/colorbar — more on demand.
+
+**Requesting JPEG on a sensor without a JPEG encoder** (e.g. OV7670) makes `pico_camera_init()` fail with `PICO_CAMERA_ERR_NOT_SUPPORTED` — same behavior as esp32-camera. A `frame_size` beyond the sensor's maximum is clamped to the maximum with a warning instead of failing.
 
 ## Installation
 
@@ -101,6 +104,7 @@ if (s) {
 
 - Architecture and roadmap: `ARCHITECTURE.md` (Chinese)
 - OV2640 register reference: `docs/ov2640_registers.md` (Chinese)
+- OV7670 register reference: `docs/ov7670_registers.md` (Chinese)
 - Early driver debug notes: `docs/ov2640_dev_notes.md` (Chinese)
 
 ## License

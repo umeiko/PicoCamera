@@ -10,6 +10,7 @@
 #include "driver/pio_capture.h"
 #include "sensors/ov2640.h"
 #include "sensors/ov3660.h"
+#include "sensors/ov7670.h"
 
 // Debug output: set to 1 for verbose logging on stdio
 #define PICOCAM_DEBUG 0
@@ -37,9 +38,14 @@ static const camera_sensor_info_t s_info_ov3660 = {
     "OV3660", OV3660_SCCB_ADDR, OV3660_PID, FRAMESIZE_UXGA, true
 };
 
+static const camera_sensor_info_t s_info_ov7670 = {
+    "OV7670", OV7670_SCCB_ADDR, OV7670_PID, FRAMESIZE_VGA, false  // no JPEG encoder
+};
+
 static const sensor_entry_t s_sensors[] = {
     { &s_info_ov2640, ov2640_detect, ov2640_init_sensor },
     { &s_info_ov3660, ov3660_detect, ov3660_init_sensor },
+    { &s_info_ov7670, ov7670_detect, ov7670_init_sensor },
 };
 
 // ---------------------------------------------------------------------------
@@ -157,8 +163,24 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
         return PICO_CAMERA_ERR_NOT_DETECTED;
     }
 
+    // Reject requests the detected sensor cannot satisfy (esp32-camera parity):
+    // JPEG on a sensor without a JPEG encoder is a hard error at init.
+    if (config->pixel_format == PIXFORMAT_JPEG && !s_cam.info->support_jpeg) {
+        PC_LOG("[PicoCamera] ERROR: JPEG format is not supported on %s\n", s_cam.info->name);
+        pico_camera_deinit();
+        return PICO_CAMERA_ERR_NOT_SUPPORTED;
+    }
+    // A frame size beyond the sensor's maximum is clamped, with a warning.
+    if (config->frame_size > s_cam.info->max_size) {
+        PC_LOG("[PicoCamera] WARNING: frame size exceeds %s max, clamping to %ux%u\n",
+               s_cam.info->name,
+               (unsigned)resolution[s_cam.info->max_size].width,
+               (unsigned)resolution[s_cam.info->max_size].height);
+        s_cam.cfg.frame_size = s_cam.info->max_size;
+    }
+
     // Frame buffers
-    s_cam.fb_cap = frame_bytes_for(config->pixel_format, config->frame_size);
+    s_cam.fb_cap = frame_bytes_for(s_cam.cfg.pixel_format, s_cam.cfg.frame_size);
     s_cam.fbs = (fb_slot_t *)calloc(config->fb_count, sizeof(fb_slot_t));
     if (!s_cam.fbs) {
         return PICO_CAMERA_ERR_NO_MEM;
@@ -193,7 +215,7 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
     }
     sleep_ms(100);
     if (s_cam.sensor.set_framesize &&
-        s_cam.sensor.set_framesize(&s_cam.sensor, config->frame_size) != 0) {
+        s_cam.sensor.set_framesize(&s_cam.sensor, s_cam.cfg.frame_size) != 0) {
         pico_camera_deinit();
         return PICO_CAMERA_ERR_FAILED_TO_SET_FRAME_SIZE;
     }
@@ -205,8 +227,8 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
     sleep_ms(300);  // let the signal settle
     s_cam.inited = true;
     PC_LOG("[PicoCamera] Init OK (%ux%u, fb_count=%u)\n",
-           (unsigned)resolution[config->frame_size].width,
-           (unsigned)resolution[config->frame_size].height,
+           (unsigned)resolution[s_cam.cfg.frame_size].width,
+           (unsigned)resolution[s_cam.cfg.frame_size].height,
            (unsigned)s_cam.fb_count);
     return PICO_CAMERA_OK;
 }

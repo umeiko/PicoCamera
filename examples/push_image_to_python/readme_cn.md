@@ -51,6 +51,7 @@ python push_image_to_python.py
 
 ## 说明
 
+- JPEG 模式要求传感器带 JPEG 编码器（OV2640/OV3660);OV7670 无编码器，用 JPEG 模式 `pico_camera_init()` 会返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`，请改用 `PUSH_FORMAT 0`(RGB565)
 - RGB565 模式按固定尺寸 320x240 解析；如下位机改了 `frame_size`，请同步修改 py 文件顶部的 `RGB_WIDTH` / `RGB_HEIGHT`
 - RGB565 推荐先用 JPEG 模式验证链路（数据量小一个数量级，帧率高得多）;RGB565 原始流约 150KB/帧，USB CDC 下帧率有限
 - 上位机解析 JPEG 帧时以 `FFD8` 开头校验，避免因 JPEG 熵数据中偶现 `EJPG` 字节序列导致错帧

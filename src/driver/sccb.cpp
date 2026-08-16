@@ -6,6 +6,14 @@
 
 static i2c_inst_t *s_i2c = NULL;
 
+// Never block forever on a wedged bus (e.g. missing pull-ups or a shorted
+// line): all transfers use the _until variants and fail with an error.
+#define SCCB_TIMEOUT_US  10000
+
+static absolute_time_t sccb_deadline(void) {
+    return make_timeout_time_us(SCCB_TIMEOUT_US);
+}
+
 int sccb_init(int i2c_port, int pin_sda, int pin_scl, uint32_t freq_hz) {
     if (i2c_port < 0 || i2c_port > 1 || pin_sda < 0 || pin_scl < 0) {
         return -1;
@@ -31,32 +39,35 @@ void sccb_deinit(void) {
 int sccb_write8(uint8_t slave_addr, uint8_t reg, uint8_t value) {
     if (!s_i2c) return -1;
     uint8_t data[] = { reg, value };
-    int ret = i2c_write_blocking(s_i2c, slave_addr, data, sizeof(data), false);
+    int ret = i2c_write_blocking_until(s_i2c, slave_addr, data, sizeof(data), false, sccb_deadline());
     return (ret == (int)sizeof(data)) ? 0 : -1;
 }
 
 int sccb_read8(uint8_t slave_addr, uint8_t reg, uint8_t *value) {
     if (!s_i2c || !value) return -1;
-    // SCCB read: write register address with repeated start, then read
-    int ret = i2c_write_blocking(s_i2c, slave_addr, &reg, 1, true);
+    // SCCB read: write the register address terminated by a STOP, then read.
+    // Do NOT use a repeated start here: strict-SCCB sensors (OV7670) ignore
+    // the read phase after a repeated start and never answer. A STOP is the
+    // OmniVision SCCB spec behavior and is accepted by OV2640 too.
+    int ret = i2c_write_blocking_until(s_i2c, slave_addr, &reg, 1, false, sccb_deadline());
     if (ret < 0) return -1;
-    ret = i2c_read_blocking(s_i2c, slave_addr, value, 1, false);
+    ret = i2c_read_blocking_until(s_i2c, slave_addr, value, 1, false, sccb_deadline());
     return (ret == 1) ? 0 : -1;
 }
 
 int sccb_write16(uint8_t slave_addr, uint16_t reg, uint8_t value) {
     if (!s_i2c) return -1;
     uint8_t data[] = { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF), value };
-    int ret = i2c_write_blocking(s_i2c, slave_addr, data, sizeof(data), false);
+    int ret = i2c_write_blocking_until(s_i2c, slave_addr, data, sizeof(data), false, sccb_deadline());
     return (ret == (int)sizeof(data)) ? 0 : -1;
 }
 
 int sccb_read16(uint8_t slave_addr, uint16_t reg, uint8_t *value) {
     if (!s_i2c || !value) return -1;
     uint8_t addr[] = { (uint8_t)(reg >> 8), (uint8_t)(reg & 0xFF) };
-    int ret = i2c_write_blocking(s_i2c, slave_addr, addr, sizeof(addr), true);
+    int ret = i2c_write_blocking_until(s_i2c, slave_addr, addr, sizeof(addr), true, sccb_deadline());
     if (ret < 0) return -1;
-    ret = i2c_read_blocking(s_i2c, slave_addr, value, 1, false);
+    ret = i2c_read_blocking_until(s_i2c, slave_addr, value, 1, false, sccb_deadline());
     return (ret == 1) ? 0 : -1;
 }
 

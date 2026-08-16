@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * camera_render_to_tft - live camera preview on a TFT display.
  *

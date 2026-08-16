@@ -53,6 +53,7 @@ The status bar shows the live frame rate.
 
 ## Notes
 
+- JPEG mode requires a sensor with a JPEG encoder (OV2640/OV3660); on OV7670 `pico_camera_init()` fails with `PICO_CAMERA_ERR_NOT_SUPPORTED` — use `PUSH_FORMAT 0` (RGB565) there
 - RGB565 mode parses a fixed 320x240 frame; if you change `frame_size` in the sketch, update `RGB_WIDTH` / `RGB_HEIGHT` at the top of the .py file to match
 - Validate the link with JPEG mode first (an order of magnitude less data, much higher frame rate); a raw RGB565 frame is ~150KB, so the frame rate over USB CDC is limited
 - The viewer verifies the `FFD8` header on JPEG frames to avoid false `EJPG` trailer matches inside JPEG entropy data

@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+#
+# This file is part of the PicoCamera project.
+# https://github.com/umeiko/PicoCamera
+#
+# Author: umeko <umeko@stu.xmu.edu.cn>
+# License: MIT
 """
 push_image_to_python - PC viewer for the PicoCamera push_image_to_python sketch.
 

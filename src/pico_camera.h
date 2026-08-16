@@ -109,7 +109,11 @@ typedef struct {
  * Can only be called once until pico_camera_deinit().
  *
  * @param config Camera configuration parameters
- * @return PICO_CAMERA_OK on success
+ * @return PICO_CAMERA_OK on success.
+ *         PICO_CAMERA_ERR_NOT_SUPPORTED if PIXFORMAT_JPEG is requested on a
+ *         sensor without a JPEG encoder (see camera_sensor_info_t.support_jpeg;
+ *         esp32-camera behaves the same way). A frame_size beyond the sensor's
+ *         maximum is clamped to the maximum instead of failing.
  */
 pico_camera_err_t pico_camera_init(const camera_config_t *config);
 
