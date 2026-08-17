@@ -12,6 +12,9 @@
 # Local build-test scaffold
 .buildtest/.pio/
 
+# CI build scratch (populated by scripts/ci_build.sh)
+scripts/ci/src/
+
 # Local reference copies (not shipped)
 .reff/
 .buildtest/

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  style:
+    name: Spelling and style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: codespell
+        run: |
+          pip install codespell
+          codespell --skip="./.git,./docs/Doxyfile,./docs/Doxyfile_zh" \
+            -L ser,dout,shiftIn,acount,froms,ThirdParty,enver .
+
+      - name: astyle
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y astyle
+          scripts/check_style.sh --check
+
+  build:
+    name: Compile examples (rp2040 / rp2350 / rp2350-riscv)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: ~/.platformio
+          key: ${{ runner.os }}-pio-${{ hashFiles('scripts/ci/platformio.ini') }}
+
+      - name: Install PlatformIO
+        run: |
+          pip install platformio
+          pio pkg install --global --platform git+https://github.com/maxgerhardt/platform-raspberrypi.git
+
+      - name: Build all examples
+        run: scripts/ci_build.sh

@@ -34,6 +34,10 @@ PicoCamera/                        # 仓库根
 │       ├── ov2640_settings.h      # 现有初始化序列表迁移
 │       ├── ov3660.h / .cpp + regs/settings   # 阶段4 补充
 │       └── ov7670.h / .cpp + regs            # 无 JPEG 型号,验证 support_jpeg 报错路径
+├── scripts/
+│   ├── check_style.sh           # astyle 格式化（沿用 arduino-pico 配置，去掉 remove-comment-prefix）
+│   ├── ci_build.sh              # 全示例 × rp2040/rp2350/rp2350-riscv 严格编译检查
+│   └── ci/                      # PlatformIO CI 工程（platformio.ini + extra_script.py）
 └── examples/
     ├── CameraSerialInfo/          # 初始化 + 打印检测到的 sensor 信息
     ├── CameraCaptureRGB565/       # 抓帧并通过串口/自定义回调消费
