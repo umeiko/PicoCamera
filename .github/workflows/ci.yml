@@ -44,7 +44,8 @@ jobs:
       - name: Install PlatformIO
         run: |
           pip install platformio
-          pio pkg install --global --platform git+https://github.com/maxgerhardt/platform-raspberrypi.git
+          pio --version
+          pio pkg install --global --platform https://github.com/maxgerhardt/platform-raspberrypi.git
 
       - name: Build all examples
         run: scripts/ci_build.sh

@@ -111,34 +111,34 @@ struct sensor_s {
     sensor_id_t id;             //< filled by detect()
     uint8_t sccb_addr;          //< 7-bit SCCB slave address
 
-    int  (*reset)            (sensor_t *sensor);
-    int  (*init_status)      (sensor_t *sensor);
-    int  (*set_pixformat)    (sensor_t *sensor, pixformat_t pixformat);
-    int  (*set_framesize)    (sensor_t *sensor, framesize_t framesize);
-    int  (*set_brightness)   (sensor_t *sensor, int level);
-    int  (*set_contrast)     (sensor_t *sensor, int level);
-    int  (*set_saturation)   (sensor_t *sensor, int level);
-    int  (*set_sharpness)    (sensor_t *sensor, int level);
-    int  (*set_gainceiling)  (sensor_t *sensor, gainceiling_t gainceiling);
-    int  (*set_quality)      (sensor_t *sensor, int quality);
-    int  (*set_colorbar)     (sensor_t *sensor, int enable);
-    int  (*set_whitebal)     (sensor_t *sensor, int enable);
-    int  (*set_gain_ctrl)    (sensor_t *sensor, int enable);
-    int  (*set_exposure_ctrl)(sensor_t *sensor, int enable);
-    int  (*set_hmirror)      (sensor_t *sensor, int enable);
-    int  (*set_vflip)        (sensor_t *sensor, int enable);
-    int  (*set_special_effect)(sensor_t *sensor, int effect);
-    int  (*set_wb_mode)      (sensor_t *sensor, int mode);
-    int  (*set_ae_level)     (sensor_t *sensor, int level);
-    int  (*set_aec_value)    (sensor_t *sensor, int value);
+    int (*reset)(sensor_t *sensor);
+    int (*init_status)(sensor_t *sensor);
+    int (*set_pixformat)(sensor_t *sensor, pixformat_t pixformat);
+    int (*set_framesize)(sensor_t *sensor, framesize_t framesize);
+    int (*set_brightness)(sensor_t *sensor, int level);
+    int (*set_contrast)(sensor_t *sensor, int level);
+    int (*set_saturation)(sensor_t *sensor, int level);
+    int (*set_sharpness)(sensor_t *sensor, int level);
+    int (*set_gainceiling)(sensor_t *sensor, gainceiling_t gainceiling);
+    int (*set_quality)(sensor_t *sensor, int quality);
+    int (*set_colorbar)(sensor_t *sensor, int enable);
+    int (*set_whitebal)(sensor_t *sensor, int enable);
+    int (*set_gain_ctrl)(sensor_t *sensor, int enable);
+    int (*set_exposure_ctrl)(sensor_t *sensor, int enable);
+    int (*set_hmirror)(sensor_t *sensor, int enable);
+    int (*set_vflip)(sensor_t *sensor, int enable);
+    int (*set_special_effect)(sensor_t *sensor, int effect);
+    int (*set_wb_mode)(sensor_t *sensor, int mode);
+    int (*set_ae_level)(sensor_t *sensor, int level);
+    int (*set_aec_value)(sensor_t *sensor, int value);
 
     /** Write masked bits of a register. mask selects which bits to touch. */
-    int  (*set_reg)          (sensor_t *sensor, int reg, int mask, int value);
+    int (*set_reg)(sensor_t *sensor, int reg, int mask, int value);
     /** Read a register, optionally masked. Returns negative on error. */
-    int  (*get_reg)          (sensor_t *sensor, int reg, int mask);
+    int (*get_reg)(sensor_t *sensor, int reg, int mask);
 
     /** Change XCLK frequency at runtime. timer is unused on RP2040. */
-    int  (*set_xclk)         (sensor_t *sensor, int timer, int xclk);
+    int (*set_xclk)(sensor_t *sensor, int timer, int xclk);
 };
 
 #ifdef __cplusplus

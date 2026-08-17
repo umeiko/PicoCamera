@@ -1,6 +1,10 @@
 #!/bin/bash
 # Format src/ and examples/ with astyle.
 #
+# CI installs astyle from Ubuntu apt (currently 3.1); the scripts are also
+# verified against astyle 3.6 (Homebrew), which produces identical output
+# for this tree.
+#
 # The option files are copies of arduino-pico's tests/astyle_core.conf and
 # tests/astyle_examples.conf, minus remove-comment-prefix so Doxygen blocks
 # and aligned trailing comments stay intact.
