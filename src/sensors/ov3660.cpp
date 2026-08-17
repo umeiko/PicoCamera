@@ -95,14 +95,14 @@ static int ov3660_reset(sensor_t *sensor) {
 static int ov3660_set_pixformat(sensor_t *sensor, pixformat_t pixformat) {
     (void)sensor;
     switch (pixformat) {
-        case PIXFORMAT_RGB565:
-            regs_write(ov3660_settings_rgb565);
-            break;
-        case PIXFORMAT_JPEG:
-            regs_write(ov3660_settings_jpeg);
-            break;
-        default:
-            return -1;
+    case PIXFORMAT_RGB565:
+        regs_write(ov3660_settings_rgb565);
+        break;
+    case PIXFORMAT_JPEG:
+        regs_write(ov3660_settings_jpeg);
+        break;
+    default:
+        return -1;
     }
     s_pixformat = pixformat;
     sleep_ms(15);
@@ -145,32 +145,32 @@ static int set_image_options(void) {
     }
 
     switch (reg4514_test) {
-        //no binning
-        case 0: reg4514 = 0x88; break;//normal
-        case 1: reg4514 = 0x88; break;//v-flip
-        case 2: reg4514 = 0xbb; break;//h-mirror
-        case 3: reg4514 = 0xbb; break;//v-flip+h-mirror
-        //binning
-        case 4: reg4514 = 0xaa; break;//normal
-        case 5: reg4514 = 0xbb; break;//v-flip
-        case 6: reg4514 = 0xbb; break;//h-mirror
-        case 7: reg4514 = 0xaa; break;//v-flip+h-mirror
+    //no binning
+    case 0: reg4514 = 0x88; break;//normal
+    case 1: reg4514 = 0x88; break;//v-flip
+    case 2: reg4514 = 0xbb; break;//h-mirror
+    case 3: reg4514 = 0xbb; break;//v-flip+h-mirror
+    //binning
+    case 4: reg4514 = 0xaa; break;//normal
+    case 5: reg4514 = 0xbb; break;//v-flip
+    case 6: reg4514 = 0xbb; break;//h-mirror
+    case 7: reg4514 = 0xaa; break;//v-flip+h-mirror
     }
 
     if (reg_write(TIMING_TC_REG20, reg20)
-        || reg_write(TIMING_TC_REG21, reg21)
-        || reg_write(0x4514, reg4514)) {
+            || reg_write(TIMING_TC_REG21, reg21)
+            || reg_write(0x4514, reg4514)) {
         ret = -1;
     }
 
     if (s_binning) {
         ret = ret || reg_write(0x4520, 0x0b)
-            || reg_write(X_INCREMENT, 0x31)//odd:3, even: 1
-            || reg_write(Y_INCREMENT, 0x31);//odd:3, even: 1
+              || reg_write(X_INCREMENT, 0x31)//odd:3, even: 1
+              || reg_write(Y_INCREMENT, 0x31);//odd:3, even: 1
     } else {
         ret = ret || reg_write(0x4520, 0xb0)
-            || reg_write(X_INCREMENT, 0x11)//odd:1, even: 1
-            || reg_write(Y_INCREMENT, 0x11);//odd:1, even: 1
+              || reg_write(X_INCREMENT, 0x11)//odd:1, even: 1
+              || reg_write(Y_INCREMENT, 0x11);//odd:1, even: 1
     }
     return ret;
 }
@@ -217,21 +217,21 @@ static int ov3660_set_framesize(sensor_t *sensor, framesize_t framesize) {
 
     s_binning = (w <= (settings->max_width / 2) && h <= (settings->max_height / 2));
     s_scale = !((w == settings->max_width && h == settings->max_height)
-        || (w == (settings->max_width / 2) && h == (settings->max_height / 2)));
+                || (w == (settings->max_width / 2) && h == (settings->max_height / 2)));
 
     ret = write_addr_reg(X_ADDR_ST_H, settings->start_x, settings->start_y)
-       || write_addr_reg(X_ADDR_END_H, settings->end_x, settings->end_y)
-       || write_addr_reg(X_OUTPUT_SIZE_H, w, h);
+          || write_addr_reg(X_ADDR_END_H, settings->end_x, settings->end_y)
+          || write_addr_reg(X_OUTPUT_SIZE_H, w, h);
     if (ret) {
         goto fail;
     }
 
     if (s_binning) {
         ret = write_addr_reg(X_TOTAL_SIZE_H, settings->total_x, (settings->total_y / 2) + 1)
-           || write_addr_reg(X_OFFSET_H, 8, 2);
+              || write_addr_reg(X_OFFSET_H, 8, 2);
     } else {
         ret = write_addr_reg(X_TOTAL_SIZE_H, settings->total_x, settings->total_y)
-           || write_addr_reg(X_OFFSET_H, 16, 6);
+              || write_addr_reg(X_OFFSET_H, 16, 6);
     }
 
     if (ret == 0) {
@@ -369,7 +369,7 @@ int ov3660_init_sensor(sensor_t *sensor) {
     sensor->set_colorbar     = NULL; // not ported yet
     sensor->set_whitebal     = NULL; // not ported yet
     sensor->set_gain_ctrl    = NULL; // not ported yet
-    sensor->set_exposure_ctrl= NULL; // not ported yet
+    sensor->set_exposure_ctrl = NULL; // not ported yet
     sensor->set_hmirror      = ov3660_set_hmirror;
     sensor->set_vflip        = ov3660_set_vflip;
     sensor->set_special_effect = NULL; // not ported yet

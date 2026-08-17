@@ -106,7 +106,7 @@ static void config_sm(uint sm, uint offset, uint wrap_target, uint wrap, int pin
 
 int pio_capture_init(const pio_capture_pins_t *pins) {
     if (!pins || pins->pin_d0 < 0 || pins->pin_vsync < 0 ||
-        pins->pin_href < 0 || pins->pin_pclk < 0) {
+            pins->pin_href < 0 || pins->pin_pclk < 0) {
         return -1;
     }
     if (s_cap.inited) {
@@ -133,8 +133,12 @@ int pio_capture_init(const pio_capture_pins_t *pins) {
         int sm_sized = pio_claim_unused_sm(p, false);
         int sm_cont = pio_claim_unused_sm(p, false);
         if (sm_sized < 0 || sm_cont < 0) {
-            if (sm_sized >= 0) pio_sm_unclaim(p, (uint)sm_sized);
-            if (sm_cont >= 0) pio_sm_unclaim(p, (uint)sm_cont);
+            if (sm_sized >= 0) {
+                pio_sm_unclaim(p, (uint)sm_sized);
+            }
+            if (sm_cont >= 0) {
+                pio_sm_unclaim(p, (uint)sm_cont);
+            }
             continue;
         }
         s_cap.pio = p;
@@ -170,7 +174,9 @@ int pio_capture_init(const pio_capture_pins_t *pins) {
 }
 
 void pio_capture_deinit(void) {
-    if (!s_cap.inited) return;
+    if (!s_cap.inited) {
+        return;
+    }
     dma_channel_unclaim(s_cap.dma_chan);
     pio_sm_set_enabled(s_cap.pio, s_cap.sm_sized, false);
     pio_sm_set_enabled(s_cap.pio, s_cap.sm_cont, false);

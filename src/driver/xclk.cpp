@@ -15,8 +15,12 @@ int xclk_start(int pin, uint32_t freq_hz) {
     // Choose an integer divider closest to the requested frequency.
     // freq = sys / div, duty 50%.
     uint32_t div = (sys + freq_hz / 2) / freq_hz;
-    if (div < 2) div = 2;
-    if (div > 65536) div = 65536;
+    if (div < 2) {
+        div = 2;
+    }
+    if (div > 65536) {
+        div = 65536;
+    }
 
     gpio_set_function(pin, GPIO_FUNC_PWM);
     uint slice = pwm_gpio_to_slice_num(pin);
@@ -32,7 +36,9 @@ int xclk_start(int pin, uint32_t freq_hz) {
 }
 
 void xclk_stop(int pin) {
-    if (pin < 0) return;
+    if (pin < 0) {
+        return;
+    }
     uint slice = pwm_gpio_to_slice_num(pin);
     pwm_set_enabled(slice, false);
     gpio_set_function(pin, GPIO_FUNC_SIO);

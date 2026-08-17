@@ -15,9 +15,9 @@
 // Debug output: set to 1 for verbose logging on stdio
 #define PICOCAM_DEBUG 0
 #if PICOCAM_DEBUG
-    #define PC_LOG(...) printf(__VA_ARGS__)
+#define PC_LOG(...) printf(__VA_ARGS__)
 #else
-    #define PC_LOG(...)
+#define PC_LOG(...)
 #endif
 
 // ---------------------------------------------------------------------------
@@ -76,21 +76,24 @@ static size_t frame_bytes_for(pixformat_t fmt, framesize_t fs) {
     size_t w = resolution[fs].width;
     size_t h = resolution[fs].height;
     switch (fmt) {
-        case PIXFORMAT_RGB565: return w * h * 2;
-        case PIXFORMAT_JPEG:   return w * h / 4 + 8192;  // upper bound estimate
-        default: return 0;
+    case PIXFORMAT_RGB565: return w * h * 2;
+    case PIXFORMAT_JPEG:   return w * h / 4 + 8192;  // upper bound estimate
+    default: return 0;
     }
 }
 
 static pico_camera_err_t validate_config(const camera_config_t *c) {
-    if (!c) return PICO_CAMERA_ERR_INVALID_ARG;
+    if (!c) {
+        return PICO_CAMERA_ERR_INVALID_ARG;
+    }
     if (c->pin_xclk < 0 || c->pin_sccb_sda < 0 || c->pin_sccb_scl < 0 ||
-        c->pin_vsync < 0 || c->pin_href < 0 || c->pin_pclk < 0 || c->pin_d0 < 0) {
+            c->pin_vsync < 0 || c->pin_href < 0 || c->pin_pclk < 0 || c->pin_d0 < 0) {
         return PICO_CAMERA_ERR_INVALID_ARG;
     }
     // PIO "in pins" samples 8 consecutive GPIOs
     const int d[8] = { c->pin_d0, c->pin_d1, c->pin_d2, c->pin_d3,
-                       c->pin_d4, c->pin_d5, c->pin_d6, c->pin_d7 };
+                       c->pin_d4, c->pin_d5, c->pin_d6, c->pin_d7
+                     };
     for (int i = 0; i < 8; i++) {
         if (d[i] != c->pin_d0 + i) {
             return PICO_CAMERA_ERR_INVALID_ARG;  // data pins must be consecutive
@@ -209,13 +212,13 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
 
     // Apply requested format and size
     if (s_cam.sensor.set_pixformat &&
-        s_cam.sensor.set_pixformat(&s_cam.sensor, config->pixel_format) != 0) {
+            s_cam.sensor.set_pixformat(&s_cam.sensor, config->pixel_format) != 0) {
         pico_camera_deinit();
         return PICO_CAMERA_ERR_FAILED_TO_SET_OUT_FORMAT;
     }
     sleep_ms(100);
     if (s_cam.sensor.set_framesize &&
-        s_cam.sensor.set_framesize(&s_cam.sensor, s_cam.cfg.frame_size) != 0) {
+            s_cam.sensor.set_framesize(&s_cam.sensor, s_cam.cfg.frame_size) != 0) {
         pico_camera_deinit();
         return PICO_CAMERA_ERR_FAILED_TO_SET_FRAME_SIZE;
     }

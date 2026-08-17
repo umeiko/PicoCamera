@@ -93,14 +93,14 @@ static int ov2640_reset(sensor_t *sensor) {
 static int ov2640_set_pixformat(sensor_t *sensor, pixformat_t pixformat) {
     (void)sensor;
     switch (pixformat) {
-        case PIXFORMAT_RGB565:
-            regs_write(ov2640_settings_rgb565);
-            break;
-        case PIXFORMAT_JPEG:
-            regs_write(ov2640_settings_jpeg);
-            break;
-        default:
-            return -1;
+    case PIXFORMAT_RGB565:
+        regs_write(ov2640_settings_rgb565);
+        break;
+    case PIXFORMAT_JPEG:
+        regs_write(ov2640_settings_jpeg);
+        break;
+    default:
+        return -1;
     }
     s_pixformat = pixformat;
     sleep_ms(15);
@@ -150,10 +150,12 @@ static int ov2640_set_framesize(sensor_t *sensor, framesize_t framesize) {
         { VSIZE, (uint8_t)((max_y >> 2) & 0xFF) },
         { XOFFL, (uint8_t)(offset_x & 0xFF) },
         { YOFFL, (uint8_t)(offset_y & 0xFF) },
-        { VHYX, (uint8_t)(VAL_SET(max_y, 0x1, 10, 7) |
-                VAL_SET(offset_y, 0x7, 8, 4) |
-                VAL_SET(max_x, 0x1, 10, 3) |
-                VAL_SET(offset_x, 0x7, 8, 0)) },
+        {
+            VHYX, (uint8_t)(VAL_SET(max_y, 0x1, 10, 7) |
+                            VAL_SET(offset_y, 0x7, 8, 4) |
+                            VAL_SET(max_x, 0x1, 10, 3) |
+                            VAL_SET(offset_x, 0x7, 8, 0))
+        },
         { TEST, (uint8_t)((max_x >> 11) << 7) },
         { ZMOW, (uint8_t)((w >> 2) & 0xFF) },
         { ZMOH, (uint8_t)((h >> 2) & 0xFF) },
@@ -371,8 +373,12 @@ static int ov2640_set_colorbar(sensor_t *sensor, int enable) {
 
 static int ov2640_set_quality(sensor_t *sensor, int quality) {
     (void)sensor;
-    if (quality < 0) quality = 0;
-    if (quality > 63) quality = 63;
+    if (quality < 0) {
+        quality = 0;
+    }
+    if (quality > 63) {
+        quality = 63;
+    }
     reg_write(BANK_SEL, BANK_SEL_DSP);
     reg_write(QS, (uint8_t)quality);
     return 0;
@@ -436,7 +442,7 @@ int ov2640_init_sensor(sensor_t *sensor) {
     sensor->set_colorbar     = ov2640_set_colorbar;
     sensor->set_whitebal     = ov2640_set_whitebal;
     sensor->set_gain_ctrl    = ov2640_set_gain_ctrl;
-    sensor->set_exposure_ctrl= ov2640_set_exposure_ctrl;
+    sensor->set_exposure_ctrl = ov2640_set_exposure_ctrl;
     sensor->set_hmirror      = ov2640_set_hmirror;
     sensor->set_vflip        = ov2640_set_vflip;
     sensor->set_special_effect = ov2640_set_special_effect;

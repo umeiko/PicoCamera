@@ -147,11 +147,11 @@ static uint8_t s_clkrc = 0x01;
 static int frame_control(int hstart, int hstop, int vstart, int vstop) {
     uint8_t frame[][2] = {
         {HSTART, (uint8_t)(hstart >> 3)},
-        {HSTOP,  (uint8_t)(hstop >> 3)},
-        {HREF,   (uint8_t)(((hstop & 0x07) << 3) | (hstart & 0x07))},
+        {HSTOP, (uint8_t)(hstop >> 3)},
+        {HREF, (uint8_t)(((hstop & 0x07) << 3) | (hstart & 0x07))},
         {VSTART, (uint8_t)(vstart >> 2)},
-        {VSTOP,  (uint8_t)(vstop >> 2)},
-        {VREF,   (uint8_t)(((vstop & 0x02) << 2) | (vstart & 0x02))},
+        {VSTOP, (uint8_t)(vstop >> 2)},
+        {VREF, (uint8_t)(((vstop & 0x02) << 2) | (vstart & 0x02))},
         {0xFF,   0xFF},
     };
     regs_write(frame);
@@ -192,20 +192,20 @@ static int ov7670_set_framesize(sensor_t *sensor, framesize_t framesize) {
     s_clkrc = reg_read(CLKRC);
 
     switch (framesize) {
-        case FRAMESIZE_VGA:
-            regs_write(ov7670_vga);
-            ret = frame_control(158, 14, 10, 490);  // values from Omnivision
-            break;
-        case FRAMESIZE_QVGA:
-            regs_write(ov7670_qvga);
-            ret = frame_control(158, 14, 10, 490);
-            break;
-        case FRAMESIZE_QQVGA:
-            regs_write(ov7670_qqvga);
-            ret = frame_control(158, 14, 12, 490);
-            break;
-        default:
-            break;
+    case FRAMESIZE_VGA:
+        regs_write(ov7670_vga);
+        ret = frame_control(158, 14, 10, 490);  // values from Omnivision
+        break;
+    case FRAMESIZE_QVGA:
+        regs_write(ov7670_qvga);
+        ret = frame_control(158, 14, 10, 490);
+        break;
+    case FRAMESIZE_QQVGA:
+        regs_write(ov7670_qqvga);
+        ret = frame_control(158, 14, 12, 490);
+        break;
+    default:
+        break;
     }
 
     sleep_ms(30);
@@ -298,7 +298,7 @@ int ov7670_init_sensor(sensor_t *sensor) {
     sensor->set_colorbar     = ov7670_set_colorbar;
     sensor->set_whitebal     = ov7670_set_whitebal;
     sensor->set_gain_ctrl    = ov7670_set_gain_ctrl;
-    sensor->set_exposure_ctrl= ov7670_set_exposure_ctrl;
+    sensor->set_exposure_ctrl = ov7670_set_exposure_ctrl;
     sensor->set_hmirror      = ov7670_set_hmirror;
     sensor->set_vflip        = ov7670_set_vflip;
     sensor->set_special_effect = NULL; // not ported yet
