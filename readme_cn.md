@@ -49,7 +49,18 @@ lib_deps =
 
 也可以直接用 git 地址（`lib_deps = https://github.com/umeiko/PicoCamera.git`）或本地 `file://` 路径。
 
-两者都需要 earlephilhower 的 [arduino-pico](https://github.com/earlephilhower/arduino-pico) 核心。
+### Pico SDK（裸 CMake 工程）
+
+本库是纯 Pico SDK 代码（不依赖 Arduino），裸 CMake 工程可以直接引入（要求 SDK ≥ 1.5.0）：
+
+```cmake
+add_subdirectory(path/to/PicoCamera)
+target_link_libraries(my_app pico_stdlib pico_camera)
+```
+
+完整工程见 [examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture)，细节见[使用指南](docs/user_guide_zh.md)。
+
+Arduino / PlatformIO 两种方式需要 earlephilhower 的 [arduino-pico](https://github.com/earlephilhower/arduino-pico) 核心。
 
 ## 快速开始
 

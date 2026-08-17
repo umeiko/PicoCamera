@@ -49,7 +49,18 @@ lib_deps =
 
 A git URL (`lib_deps = https://github.com/umeiko/PicoCamera.git`) or a local `file://` path works too.
 
-Both require the earlephilhower [arduino-pico](https://github.com/earlephilhower/arduino-pico) core.
+### Pico SDK (bare-metal CMake)
+
+The library is pure Pico SDK code (no Arduino dependency), so bare CMake projects can consume it directly (SDK ≥ 1.5.0):
+
+```cmake
+add_subdirectory(path/to/PicoCamera)
+target_link_libraries(my_app pico_stdlib pico_camera)
+```
+
+See [examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture) for a complete project, and the [user guide](docs/user_guide.md) for details.
+
+Both Arduino/PlatformIO require the earlephilhower [arduino-pico](https://github.com/earlephilhower/arduino-pico) core.
 
 ## Quick start
 

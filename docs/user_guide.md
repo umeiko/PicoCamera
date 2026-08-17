@@ -157,3 +157,46 @@ Per-sensor support (as of v0.2.0):
 detected model: `name`, `sccb_addr`, `pid`, `max_size` (largest
 `framesize_t` supported) and `support_jpeg`. Useful for adapting your
 config at runtime before or after init.
+
+## 6. Using from a Pico SDK project (no Arduino)
+
+The library is pure Pico SDK code — nothing in `src/` touches the
+Arduino core — so a bare CMake project can use it directly. Requires
+**Pico SDK ≥ 1.5.0** (the `pio_encode_*` API).
+
+In your project's `CMakeLists.txt`:
+
+```cmake
+include(pico_sdk_import.cmake)   # standard SDK boilerplate
+project(my_app C CXX ASM)
+pico_sdk_init()
+
+add_subdirectory(path/to/PicoCamera)   # this repository
+
+add_executable(my_app main.c)
+target_link_libraries(my_app pico_stdlib pico_camera)
+
+pico_enable_stdio_usb(my_app 1)        # camera logs use printf
+pico_add_extra_outputs(my_app)
+```
+
+Or with FetchContent:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(PicoCamera
+    GIT_REPOSITORY https://github.com/umeiko/PicoCamera.git
+    GIT_TAG main)
+FetchContent_MakeAvailable(PicoCamera)
+target_link_libraries(my_app pico_stdlib pico_camera)
+```
+
+In your code, `#include "PicoCamera.h"` and use the API exactly as shown
+in sections 1–5 — the only difference from Arduino sketches is that you
+manage `stdio_init_all()` yourself. Driver log messages go through
+`printf`, so enable USB or UART stdio if you want to see them.
+
+A complete, buildable project lives in
+[examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture);
+it is compiled against the latest Pico SDK in CI on every change to
+`src/`, so what you see there is guaranteed to build.

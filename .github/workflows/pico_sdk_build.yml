@@ -1,0 +1,32 @@
+name: Pico SDK Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'examples/pico_sdk_capture/**'
+      - '.github/workflows/pico_sdk_build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM toolchain and cmake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi
+
+      - name: Fetch Pico SDK
+        run: git clone --depth 1 https://github.com/raspberrypi/pico-sdk.git /opt/pico-sdk
+
+      - name: Build pico_sdk_capture example
+        run: |
+          cd examples/pico_sdk_capture
+          mkdir build && cd build
+          PICO_SDK_PATH=/opt/pico-sdk cmake ..
+          make -j"$(nproc)"

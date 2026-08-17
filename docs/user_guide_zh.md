@@ -149,3 +149,45 @@ if (s && s->set_vflip) s->set_vflip(s, 1);
 `pico_camera_sensor_info_get()` 返回已探测型号的静态信息：`name`、
 `sccb_addr`、`pid`、`max_size`（支持的最大 `framesize_t`）和
 `support_jpeg`。可用于在初始化前后按传感器能力动态调整配置。
+
+## 6. 在 Pico SDK 工程中使用（无 Arduino）
+
+本库是纯 Pico SDK 代码——`src/` 里没有任何 Arduino 依赖——裸 CMake
+工程可以直接使用。要求 **Pico SDK ≥ 1.5.0**（用到 `pio_encode_*`
+API）。
+
+在你的 `CMakeLists.txt` 中：
+
+```cmake
+include(pico_sdk_import.cmake)   # SDK 标准样板
+project(my_app C CXX ASM)
+pico_sdk_init()
+
+add_subdirectory(path/to/PicoCamera)   # 本仓库
+
+add_executable(my_app main.c)
+target_link_libraries(my_app pico_stdlib pico_camera)
+
+pico_enable_stdio_usb(my_app 1)        # 驱动日志走 printf
+pico_add_extra_outputs(my_app)
+```
+
+或者用 FetchContent：
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(PicoCamera
+    GIT_REPOSITORY https://github.com/umeiko/PicoCamera.git
+    GIT_TAG main)
+FetchContent_MakeAvailable(PicoCamera)
+target_link_libraries(my_app pico_stdlib pico_camera)
+```
+
+代码里 `#include "PicoCamera.h"`，API 用法与第 1–5 节完全一致——和
+Arduino sketch 唯一的区别是你需要自己调用 `stdio_init_all()`。驱动
+日志通过 `printf` 输出，想看日志请启用 USB 或 UART stdio。
+
+完整可编译的工程见
+[examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture)；
+每次 `src/` 有改动，CI 都会用最新 Pico SDK 编译该示例，保证你看到的
+代码一定能通过编译。
