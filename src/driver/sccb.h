@@ -16,14 +16,18 @@ extern "C" {
 /**
  * @brief Initialize the SCCB bus.
  * @param i2c_port  RP2040 I2C peripheral number: 0 or 1
- * @param pin_sda   SDA GPIO
- * @param pin_scl   SCL GPIO
+ * @param pin_sda   SDA GPIO, or -1 to reuse an already initialized I2C bus
+ *                  (esp32-camera parity); the caller must have set up the bus
+ *                  beforehand and keeps owning it. Real pins are hard-muxed:
+ *                  SDA must be an even GPIO routing to the requested port,
+ *                  i.e. (pin / 2) % 2 == i2c_port
+ * @param pin_scl   SCL GPIO (ignored when pin_sda is -1)
  * @param freq_hz   Bus frequency (100000 is a safe default)
  * @return 0 on success
  */
 int sccb_init(int i2c_port, int pin_sda, int pin_scl, uint32_t freq_hz);
 
-/** Release the SCCB bus pins and peripheral. */
+/** Release the SCCB bus. A shared bus (pin_sda == -1) is left untouched. */
 void sccb_deinit(void);
 
 /** 8-bit register address access (e.g. OV2640). Return 0 on success. */

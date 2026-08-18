@@ -45,6 +45,7 @@ static camera_config_t cam_config = {
   .frame_size    = FRAMESIZE_QVGA,   // 320x240
   .jpeg_quality  = 10,
   .fb_count      = 1,
+  .fb_location   = PICO_CAMERA_FB_AUTO,
 };
 
 // Display window: center-crop the 320x240 frame for a 280x240 screen.

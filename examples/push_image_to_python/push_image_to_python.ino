@@ -47,6 +47,7 @@ static camera_config_t config = {
   .frame_size    = FRAMESIZE_QVGA,   // 320x240
   .jpeg_quality  = 10,
   .fb_count      = 1,
+  .fb_location   = PICO_CAMERA_FB_AUTO,
 };
 
 void setup() {

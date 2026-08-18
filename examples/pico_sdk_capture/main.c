@@ -32,6 +32,7 @@ int main(void) {
         .frame_size    = FRAMESIZE_QVGA,
         .jpeg_quality  = 10,
         .fb_count      = 1,
+        .fb_location   = PICO_CAMERA_FB_AUTO,
     };
 
     pico_camera_err_t err = pico_camera_init(&config);

@@ -96,6 +96,7 @@ camera_config_t config = {
     .frame_size = FRAMESIZE_QVGA,
     .jpeg_quality = 10,
     .fb_count = 1,
+    .fb_location = PICO_CAMERA_FB_AUTO,
 };
 
 void setup() {
@@ -125,7 +126,9 @@ if (s) {
 ## 与 esp32-camera 的差异
 
 - 数据引脚 `pin_d0..pin_d7` 必须是 **8 个连续 GPIO**（PIO `in pins` 指令的硬件限制），初始化时会校验
-- 无 PSRAM 概念，帧缓冲在 SRAM（264KB）。RGB565 建议 ≤ VGA（640x480, 600KB 超 SRAM，实际 QVGA 较稳）；JPEG 缓冲按 `宽×高/4 + 8KB` 估算
+- SCCB 引脚是硬复用的（真 I2C，不像 ESP32 任意指派）：SDA 只能偶数脚、SCL 只能奇数脚，且两脚必须路由到 `sccb_i2c_port` 指定的外设——I2C0 为 SDA GP0/4/8...28、SCL GP1/5/9...29，I2C1 为 SDA GP2/6/10...26、SCL GP3/7/11...27（RP2350 延伸到 GP47）。初始化时校验
+- 带 PSRAM 的 RP2350 板（在 core 的 PSRAM 菜单中启用后）可以把帧缓冲放进 PSRAM——设 `fb_location = PICO_CAMERA_FB_IN_PSRAM` 即可开更大的分辨率。默认 `PICO_CAMERA_FB_AUTO` 有 PSRAM 就用、分配失败**自动回退 SRAM**（与 esp32-camera 失败即 init 失败的语义不同）。RP2040 恒为 SRAM（264KB）：RGB565 建议 ≤ QVGA；JPEG 缓冲按 `宽×高/4 + 8KB` 估算
+- SCCB 可以复用已初始化的 I2C 总线：`pin_sccb_sda = -1`，再用 `sccb_i2c_port` 指定总线（如 `1` 复用 `Wire1`，与 esp32-camera 一致）。需先自行 `Wire1.begin()`（或 `i2c_init()`）；库不会初始化也不会 deinit 共享总线
 - 暂不支持 `grab_mode`：`pico_camera_fb_get()` 是阻塞单帧语义（等价 `CAMERA_GRAB_WHEN_EMPTY`），每次调用同步等下一帧
 
 ## 示例

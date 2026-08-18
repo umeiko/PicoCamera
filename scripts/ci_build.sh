@@ -8,7 +8,7 @@ PIO="${PIO:-pio}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(dirname "$HERE")"
 PROJ="$HERE/ci"
-ENVS="rp2040 rp2350 rp2350-riscv"
+ENVS="rp2040 rp2350 rp2350-riscv rp2350-psram"
 EXAMPLES="CameraCaptureJPEG CameraCaptureRGB565 CameraSerialInfo push_image_to_python"
 
 fail=0

@@ -118,16 +118,25 @@ int pio_capture_init(const pio_capture_pins_t *pins) {
     make_program(&s_cap.prog_sized, s_cap.instr_sized, SIZED_PROG_LEN);
     make_program(&s_cap.prog_cont, s_cap.instr_cont, CONT_PROG_LEN);
 
-    // Find a PIO block that fits both programs and has two free state machines
-    PIO candidates[] = { pio0, pio1 };
+    // Find a PIO block that fits both programs and has two free state
+    // machines (RP2350 adds a third block, pio2)
+    PIO candidates[] = {
+        pio0, pio1,
+#if NUM_PIOS > 2
+        pio2,
+#endif
+    };
     bool claimed = false;
-    for (size_t i = 0; i < 2 && !claimed; i++) {
+    for (size_t i = 0; i < sizeof(candidates) / sizeof(candidates[0]) && !claimed; i++) {
         PIO p = candidates[i];
         if (!pio_can_add_program(p, &s_cap.prog_sized)) {
             continue;
         }
         int offset_sized = pio_add_program(p, &s_cap.prog_sized);
         if (offset_sized < 0 || !pio_can_add_program(p, &s_cap.prog_cont)) {
+            if (offset_sized >= 0) {
+                pio_remove_program(p, &s_cap.prog_sized, (uint)offset_sized);
+            }
             continue;
         }
         int sm_sized = pio_claim_unused_sm(p, false);
@@ -139,6 +148,7 @@ int pio_capture_init(const pio_capture_pins_t *pins) {
             if (sm_cont >= 0) {
                 pio_sm_unclaim(p, (uint)sm_cont);
             }
+            pio_remove_program(p, &s_cap.prog_sized, (uint)offset_sized);
             continue;
         }
         s_cap.pio = p;
@@ -168,7 +178,16 @@ int pio_capture_init(const pio_capture_pins_t *pins) {
     config_sm(s_cap.sm_cont, s_cap.offset_cont, CONT_WRAP_TARGET, CONT_WRAP, pins->pin_d0);
     // continuous SM stays disabled until a variable capture starts
 
-    s_cap.dma_chan = dma_claim_unused_channel(true);
+    s_cap.dma_chan = dma_claim_unused_channel(false);
+    if (s_cap.dma_chan < 0) {
+        // No free DMA channel: roll back the PIO claims instead of panicking
+        pio_sm_set_enabled(s_cap.pio, s_cap.sm_sized, false);
+        pio_remove_program(s_cap.pio, &s_cap.prog_sized, s_cap.offset_sized);
+        pio_remove_program(s_cap.pio, &s_cap.prog_cont, s_cap.offset_cont);
+        pio_sm_unclaim(s_cap.pio, s_cap.sm_sized);
+        pio_sm_unclaim(s_cap.pio, s_cap.sm_cont);
+        return -1;
+    }
     s_cap.inited = true;
     return 0;
 }

@@ -5,6 +5,12 @@
 
 #include "pico/stdlib.h"
 
+// RP2350_PSRAM_CS is only defined when the arduino-pico core has PSRAM
+// enabled; pmalloc() lives in the core's Arduino.h.
+#if defined(RP2350_PSRAM_CS)
+#include <Arduino.h>
+#endif
+
 #include "driver/sccb.h"
 #include "driver/xclk.h"
 #include "driver/pio_capture.h"
@@ -82,12 +88,66 @@ static size_t frame_bytes_for(pixformat_t fmt, framesize_t fs) {
     }
 }
 
+// Allocate one frame buffer. PSRAM allocation needs RP2350 with PSRAM enabled
+// in the core (RP2350_PSRAM_CS); free() routes by address, so no bookkeeping
+// is needed at deinit. AUTO falls back to SRAM, strict PSRAM does not
+// (esp32-camera parity).
+static uint8_t *fb_alloc(size_t bytes, camera_fb_location_t loc) {
+#if defined(RP2350_PSRAM_CS)
+    if (loc != PICO_CAMERA_FB_IN_SRAM) {
+        uint8_t *p = (uint8_t *)pmalloc(bytes);
+        if (p || loc == PICO_CAMERA_FB_IN_PSRAM) {
+            return p;
+        }
+    }
+#else
+    if (loc == PICO_CAMERA_FB_IN_PSRAM) {
+        return NULL;  // no PSRAM on this build
+    }
+#endif
+    return (uint8_t *)malloc(bytes);
+}
+
+// A GPIO is valid only if it exists on this chip (RP2040: 0-29, RP2350: 0-47).
+static bool pin_ok(int pin) {
+    return pin >= 0 && pin < (int)NUM_BANK0_GPIOS;
+}
+
+// SCCB is real I2C on the RP2040/RP2350, so the pins are hard-muxed unlike
+// on ESP32: SDA must be an even GPIO, SCL an odd one, and the pair routes to
+// I2C((pin / 2) % 2). The pin choice, not the user, decides the peripheral.
+static bool sccb_pins_ok(int pin_sda, int pin_scl, int i2c_port) {
+    if (!pin_ok(pin_sda) || !pin_ok(pin_scl)) {
+        return false;
+    }
+    if ((pin_sda & 1) || !(pin_scl & 1)) {
+        return false;  // SDA even, SCL odd
+    }
+    return ((pin_sda >> 1) & 1) == i2c_port && ((pin_scl >> 1) & 1) == i2c_port;
+}
+
 static pico_camera_err_t validate_config(const camera_config_t *c) {
     if (!c) {
         return PICO_CAMERA_ERR_INVALID_ARG;
     }
-    if (c->pin_xclk < 0 || c->pin_sccb_sda < 0 || c->pin_sccb_scl < 0 ||
-            c->pin_vsync < 0 || c->pin_href < 0 || c->pin_pclk < 0 || c->pin_d0 < 0) {
+    if (!pin_ok(c->pin_xclk) ||
+            !pin_ok(c->pin_vsync) || !pin_ok(c->pin_href) || !pin_ok(c->pin_pclk) || !pin_ok(c->pin_d0)) {
+        return PICO_CAMERA_ERR_INVALID_ARG;
+    }
+    // -1 (unused) is allowed for power/reset, but a present pin must exist
+    if (c->pin_pwdn >= (int)NUM_BANK0_GPIOS || c->pin_reset >= (int)NUM_BANK0_GPIOS) {
+        return PICO_CAMERA_ERR_INVALID_ARG;
+    }
+    // pin_sccb_sda == -1 selects shared-bus mode (pin_sccb_scl ignored);
+    // anything below -1, or SCL without SDA, is an error. With real pins
+    // given, they must match the I2C mux of sccb_i2c_port.
+    if (c->pin_sccb_sda < -1 || (c->pin_sccb_sda >= 0 && c->pin_sccb_scl < 0)) {
+        return PICO_CAMERA_ERR_INVALID_ARG;
+    }
+    if (c->pin_sccb_sda >= 0 && !sccb_pins_ok(c->pin_sccb_sda, c->pin_sccb_scl, c->sccb_i2c_port)) {
+        return PICO_CAMERA_ERR_INVALID_ARG;
+    }
+    if (c->fb_location < PICO_CAMERA_FB_AUTO || c->fb_location > PICO_CAMERA_FB_IN_SRAM) {
         return PICO_CAMERA_ERR_INVALID_ARG;
     }
     // PIO "in pins" samples 8 consecutive GPIOs
@@ -95,8 +155,8 @@ static pico_camera_err_t validate_config(const camera_config_t *c) {
                        c->pin_d4, c->pin_d5, c->pin_d6, c->pin_d7
                      };
     for (int i = 0; i < 8; i++) {
-        if (d[i] != c->pin_d0 + i) {
-            return PICO_CAMERA_ERR_INVALID_ARG;  // data pins must be consecutive
+        if (d[i] != c->pin_d0 + i || !pin_ok(d[i])) {
+            return PICO_CAMERA_ERR_INVALID_ARG;  // data pins must be consecutive (and exist)
         }
     }
     if (c->frame_size >= FRAMESIZE_INVALID || c->pixel_format >= PIXFORMAT_INVALID) {
@@ -190,9 +250,9 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
     }
     s_cam.fb_count = config->fb_count;
     for (size_t i = 0; i < s_cam.fb_count; i++) {
-        uint8_t *raw = (uint8_t *)malloc(s_cam.fb_cap + 32);
+        uint8_t *raw = fb_alloc(s_cam.fb_cap + 32, config->fb_location);
         if (!raw) {
-            PC_LOG("[PicoCamera] ERROR: malloc(%u) failed\n", (unsigned)s_cam.fb_cap);
+            PC_LOG("[PicoCamera] ERROR: frame buffer alloc(%u) failed\n", (unsigned)s_cam.fb_cap);
             pico_camera_deinit();
             return PICO_CAMERA_ERR_NO_MEM;
         }

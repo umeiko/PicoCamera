@@ -19,6 +19,7 @@
  *         .frame_size   = FRAMESIZE_QVGA,
  *         .jpeg_quality = 10,
  *         .fb_count     = 1,
+ *         .fb_location  = PICO_CAMERA_FB_AUTO,
  *     };
  *
  *     pico_camera_init(&config);
@@ -58,12 +59,27 @@ typedef int pico_camera_err_t;
  * copy bundled with the Arduino core, these macros describe the copy the
  * sketch actually compiled against. */
 #define PICO_CAMERA_VERSION_MAJOR   0
-#define PICO_CAMERA_VERSION_MINOR   3
+#define PICO_CAMERA_VERSION_MINOR   4
 #define PICO_CAMERA_VERSION_PATCH   0
 #define PICO_CAMERA_VERSION_HEX     ((PICO_CAMERA_VERSION_MAJOR << 16) | \
                                      (PICO_CAMERA_VERSION_MINOR << 8) |  \
                                      PICO_CAMERA_VERSION_PATCH)
-#define PICO_CAMERA_VERSION_STRING  "0.3.0"
+#define PICO_CAMERA_VERSION_STRING  "0.4.0"
+
+/**
+ * @brief Frame buffer location
+ *
+ * PSRAM requires an RP2350 board with a PSRAM chip, enabled via the core's
+ * PSRAM menu (Arduino IDE) or board_upload.psram_length (PlatformIO);
+ * RP2040 has no PSRAM support. Unlike esp32-camera, PICO_CAMERA_FB_AUTO
+ * falls back to SRAM when PSRAM allocation fails — esp32-camera has no
+ * automatic fallback and fails init instead.
+ */
+typedef enum {
+    PICO_CAMERA_FB_AUTO = 0,        //< PSRAM when available, SRAM otherwise (default)
+    PICO_CAMERA_FB_IN_PSRAM,        //< PSRAM only; init fails if unavailable (esp32-camera parity)
+    PICO_CAMERA_FB_IN_SRAM          //< On-chip SRAM only
+} camera_fb_location_t;
 
 /**
  * @brief Configuration structure for camera initialization
@@ -71,14 +87,21 @@ typedef int pico_camera_err_t;
  * Pin fields mirror esp32-camera. Note the RP2040 PIO constraint:
  * pin_d0..pin_d7 must be 8 consecutive GPIOs (pin_dN == pin_d0 + N).
  * pin_vsync / pin_href / pin_pclk are free choice.
- * A pin value of -1 means "not connected" (pin_pwdn / pin_reset only).
+ * A pin value of -1 means "not connected" (pin_pwdn / pin_reset) or, for
+ * pin_sccb_sda, "reuse an already initialized I2C bus" (see that field).
  */
 typedef struct {
     int pin_pwdn;                   //< GPIO for camera power down line (-1 if unused)
     int pin_reset;                  //< GPIO for camera reset line (-1 if unused)
     int pin_xclk;                   //< GPIO for XCLK output
-    int pin_sccb_sda;               //< GPIO for SCCB SDA
-    int pin_sccb_scl;               //< GPIO for SCCB SCL
+    int pin_sccb_sda;               //< GPIO for SCCB SDA. Hard-muxed: SDA must be an even
+    //< GPIO, SCL the matching odd one, both routing to I2C(sccb_i2c_port) —
+    //< i.e. (pin / 2) % 2 == sccb_i2c_port (e.g. port 0: SDA on 0/4/8/.../28,
+    //< SCL on 1/5/9/.../29). If -1, use the already configured I2C bus by
+    //< number (sccb_i2c_port); esp32-camera parity. The bus must be
+    //< initialized beforehand (Wire.begin() / Wire1.begin() under Arduino,
+    //< i2c_init() under the bare Pico SDK).
+    int pin_sccb_scl;               //< GPIO for SCCB SCL (ignored when pin_sccb_sda is -1)
     int pin_d0;                     //< GPIO for data line 0 (lowest of 8 consecutive pins)
     int pin_d1;
     int pin_d2;
@@ -93,13 +116,17 @@ typedef struct {
 
     int xclk_freq_hz;               //< XCLK frequency in Hz (0 = default 10 MHz)
 
-    int sccb_i2c_port;              //< RP2040 I2C peripheral: 0 or 1
+    int sccb_i2c_port;              //< I2C peripheral: 0 or 1. In shared bus mode
+    //< (pin_sccb_sda == -1) this selects which
+    //< already-initialized bus to reuse
 
     pixformat_t pixel_format;       //< PIXFORMAT_RGB565 or PIXFORMAT_JPEG
     framesize_t frame_size;         //< FRAMESIZE_*
 
     int jpeg_quality;               //< 0-63, lower means higher quality (JPEG only)
     size_t fb_count;                //< Number of frame buffers to allocate
+    camera_fb_location_t fb_location; //< Where frame buffers live; PICO_CAMERA_FB_AUTO (0)
+    //< keeps old zero-initialized configs working
 } camera_config_t;
 
 /**

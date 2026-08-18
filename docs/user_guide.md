@@ -15,27 +15,38 @@ Everything the driver needs is supplied once, at init time, through
 | `pin_pwdn` | Camera power-down GPIO | `-1` if not connected |
 | `pin_reset` | Camera reset GPIO | `-1` if not connected |
 | `pin_xclk` | Master clock (XCLK) output GPIO | Driven by a PWM slice |
-| `pin_sccb_sda` / `pin_sccb_scl` | SCCB (I2C) data/clock GPIOs | Used to detect and configure the sensor |
+| `pin_sccb_sda` / `pin_sccb_scl` | SCCB (I2C) data/clock GPIOs | Used to detect and configure the sensor. Pins are hard-muxed: SDA even, SCL odd, both routing to `sccb_i2c_port` (`(pin / 2) % 2 == port`). Set `pin_sccb_sda = -1` to reuse an already initialized I2C bus (esp32-camera parity; `pin_sccb_scl` is then ignored) — see the shared-bus note below |
 | `pin_d0` .. `pin_d7` | 8 parallel data lines | **Must be 8 consecutive GPIOs** (`pin_dN == pin_d0 + N`, a PIO hardware constraint; validated at init) |
 | `pin_vsync` / `pin_href` / `pin_pclk` | Frame sync / line sync / pixel clock inputs | Free choice of GPIO |
 | `xclk_freq_hz` | XCLK frequency in Hz | `0` selects the default 10 MHz; 10–24 MHz is the typical sensor range |
-| `sccb_i2c_port` | RP2040 I2C peripheral used for SCCB | `0` or `1` |
+| `sccb_i2c_port` | RP2040 I2C peripheral used for SCCB | `0` or `1`; in shared-bus mode (`pin_sccb_sda = -1`) selects which initialized bus to reuse |
 | `pixel_format` | `PIXFORMAT_RGB565` or `PIXFORMAT_JPEG` | JPEG requires a sensor with an on-chip encoder (OV2640/OV3660 yes, OV7670 no) |
 | `frame_size` | `FRAMESIZE_*` enum | Beyond-sensor sizes are clamped to the sensor maximum with a warning instead of failing |
 | `jpeg_quality` | 0–63, **lower = higher quality** | JPEG mode only |
-| `fb_count` | Number of frame buffers to allocate | Buffers live in SRAM (264 KB total); see the memory notes below |
+| `fb_count` | Number of frame buffers to allocate | Buffers live in SRAM (264 KB total) unless PSRAM is used; see the memory notes below |
+| `fb_location` | Where frame buffers live | `PICO_CAMERA_FB_AUTO` (default): PSRAM when available, SRAM otherwise. `PICO_CAMERA_FB_IN_PSRAM`: PSRAM only, init fails if unavailable (esp32-camera parity). `PICO_CAMERA_FB_IN_SRAM`: on-chip SRAM only |
 
 Available frame sizes (see `framesize_t`): 96x96, QQVGA 160x120, QCIF
 176x144, HQVGA 240x176, 240x240, QVGA 320x240, CIF 400x296, HVGA 480x320,
 VGA 640x480, SVGA 800x600, XGA 1024x768, HD 1280x720, SXGA 1280x1024,
 UXGA 1600x1200.
 
-Memory planning (RP2040 has 264 KB SRAM, no PSRAM):
+Memory planning (RP2040 has 264 KB SRAM, no PSRAM; RP2350 boards with a
+PSRAM chip can place buffers in PSRAM when the core's PSRAM support is
+enabled — see `fb_location` above):
 
 - RGB565 needs `width * height * 2` bytes per buffer — QVGA (153 KB) is
-  the practical ceiling; VGA (600 KB) does not fit.
+  the practical ceiling in SRAM; VGA (600 KB) does not fit but works from
+  PSRAM on RP2350.
 - JPEG buffers are allocated as `width * height / 4 + 8 KB`, which covers
   typical scenes; pathological noise can overflow it.
+
+Shared SCCB bus (esp32-camera parity): to put the sensor on an I2C bus you
+already use for other devices, initialize that bus yourself
+(`Wire.begin()` / `Wire1.begin()` under Arduino, `i2c_init()` under the
+bare Pico SDK), then set `config.pin_sccb_sda = -1` and
+`config.sccb_i2c_port = 0 or 1`. The library skips all pin/bus setup and
+never deinitializes a shared bus at `pico_camera_deinit()`.
 
 ## 2. Bringing the camera up and capturing frames
 

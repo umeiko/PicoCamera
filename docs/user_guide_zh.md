@@ -14,27 +14,35 @@
 | `pin_pwdn` | 摄像头电源控制 GPIO | 未接填 `-1` |
 | `pin_reset` | 摄像头复位 GPIO | 未接填 `-1` |
 | `pin_xclk` | 主时钟（XCLK）输出 GPIO | 由 PWM 切片产生 |
-| `pin_sccb_sda` / `pin_sccb_scl` | SCCB（I2C）数据/时钟 GPIO | 用于探测和配置传感器 |
+| `pin_sccb_sda` / `pin_sccb_scl` | SCCB（I2C）数据/时钟 GPIO | 用于探测和配置传感器。引脚硬复用：SDA 偶数脚、SCL 奇数脚，且两脚必须路由到 `sccb_i2c_port`（`(pin / 2) % 2 == 端口号`）。`pin_sccb_sda = -1` 可复用已初始化的 I2C 总线（与 esp32-camera 一致，此时忽略 `pin_sccb_scl`）——见下方共享总线说明 |
 | `pin_d0` .. `pin_d7` | 8 位并口数据线 | **必须是 8 个连续 GPIO**（`pin_dN == pin_d0 + N`，PIO 硬件限制，初始化时校验） |
 | `pin_vsync` / `pin_href` / `pin_pclk` | 帧同步 / 行同步 / 像素时钟输入 | GPIO 任选 |
 | `xclk_freq_hz` | XCLK 频率（Hz） | `0` 表示默认 10 MHz；传感器一般接受 10–24 MHz |
-| `sccb_i2c_port` | SCCB 使用的 RP2040 I2C 外设号 | `0` 或 `1` |
+| `sccb_i2c_port` | SCCB 使用的 RP2040 I2C 外设号 | `0` 或 `1`；共享总线模式（`pin_sccb_sda = -1`）下选择复用哪条已初始化的总线 |
 | `pixel_format` | `PIXFORMAT_RGB565` 或 `PIXFORMAT_JPEG` | JPEG 要求传感器自带编码器（OV2640/OV3660 支持，OV7670 不支持） |
 | `frame_size` | `FRAMESIZE_*` 枚举 | 超过传感器上限时不报错，告警并钳位到最大值 |
 | `jpeg_quality` | 0–63，**越小画质越高** | 仅 JPEG 模式有效 |
-| `fb_count` | 帧缓冲数量 | 缓冲位于 SRAM（共 264 KB），见下方内存估算 |
+| `fb_count` | 帧缓冲数量 | 默认缓冲位于 SRAM（共 264 KB），也可用 PSRAM，见下方内存估算 |
+| `fb_location` | 帧缓冲存放位置 | `PICO_CAMERA_FB_AUTO`（默认）：有 PSRAM 用 PSRAM，否则 SRAM；`PICO_CAMERA_FB_IN_PSRAM`：只用 PSRAM，不可用则 init 失败（与 esp32-camera 一致）；`PICO_CAMERA_FB_IN_SRAM`：只用片上 SRAM |
 
 可选分辨率（见 `framesize_t`）：96x96、QQVGA 160x120、QCIF 176x144、
 HQVGA 240x176、240x240、QVGA 320x240、CIF 400x296、HVGA 480x320、
 VGA 640x480、SVGA 800x600、XGA 1024x768、HD 1280x720、SXGA 1280x1024、
 UXGA 1600x1200。
 
-内存估算（RP2040 只有 264 KB SRAM，无 PSRAM）：
+内存估算（RP2040 只有 264 KB SRAM，无 PSRAM；带 PSRAM 芯片的 RP2350 板
+在 core 启用 PSRAM 支持后可把缓冲放进 PSRAM——见上方 `fb_location`）：
 
-- RGB565 每缓冲占 `宽 × 高 × 2` 字节——实际建议不超过 QVGA（153 KB）；
-  VGA（600 KB）放不下。
+- RGB565 每缓冲占 `宽 × 高 × 2` 字节——SRAM 下实际建议不超过 QVGA
+  （153 KB）；VGA（600 KB）放不下，但在 RP2350 上可从 PSRAM 分配。
 - JPEG 缓冲按 `宽 × 高 / 4 + 8 KB` 分配，可覆盖常规画面；极端噪点
   画面可能超出。
+
+共享 SCCB 总线（与 esp32-camera 一致）：若想把传感器挂在你已在用的
+I2C 总线上，先自行初始化该总线（Arduino 下 `Wire.begin()` /
+`Wire1.begin()`，裸 Pico SDK 下 `i2c_init()`），然后设
+`config.pin_sccb_sda = -1`、`config.sccb_i2c_port = 0 或 1`。库会跳过
+所有引脚/总线初始化，且 `pico_camera_deinit()` 不会动共享总线。
 
 ## 2. 拉起摄像头与取帧流程
 

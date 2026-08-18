@@ -5,6 +5,9 @@
 #include "hardware/gpio.h"
 
 static i2c_inst_t *s_i2c = NULL;
+// When the bus is shared (pin_sda == -1, esp32-camera parity), the caller owns
+// it and sccb_deinit() must not tear it down.
+static bool s_owns_bus = false;
 
 // Never block forever on a wedged bus (e.g. missing pull-ups or a shorted
 // line): all transfers use the _until variants and fail with an error.
@@ -15,10 +18,31 @@ static absolute_time_t sccb_deadline(void) {
 }
 
 int sccb_init(int i2c_port, int pin_sda, int pin_scl, uint32_t freq_hz) {
-    if (i2c_port < 0 || i2c_port > 1 || pin_sda < 0 || pin_scl < 0) {
+    if (i2c_port < 0 || i2c_port > 1 || pin_sda < -1 || (pin_sda >= 0 && pin_scl < 0)) {
         return -1;
     }
+    if (pin_sda >= 0) {
+        // The I2C pins are hard-muxed: even GPIO = SDA, odd GPIO = SCL, and
+        // the pair routes to I2C((pin / 2) % 2). The pins must match the
+        // requested peripheral.
+        if (pin_sda >= (int)NUM_BANK0_GPIOS || pin_scl >= (int)NUM_BANK0_GPIOS ||
+                (pin_sda & 1) || !(pin_scl & 1) ||
+                ((pin_sda >> 1) & 1) != i2c_port || ((pin_scl >> 1) & 1) != i2c_port) {
+            return -1;
+        }
+    }
     s_i2c = i2c_get_instance(i2c_port);
+
+    if (pin_sda < 0) {
+        // Shared bus mode (esp32-camera parity, pin_sccb_sda == -1): reuse the
+        // already initialized I2C peripheral as-is. pin_scl is ignored and the
+        // caller is responsible for having set up the bus beforehand
+        // (Wire.begin() / Wire1.begin() under Arduino, i2c_init() under the
+        // bare Pico SDK).
+        s_owns_bus = false;
+        return 0;
+    }
+    s_owns_bus = true;
 
     gpio_set_function(pin_sda, GPIO_FUNC_I2C);
     gpio_set_function(pin_scl, GPIO_FUNC_I2C);
@@ -31,8 +55,11 @@ int sccb_init(int i2c_port, int pin_sda, int pin_scl, uint32_t freq_hz) {
 
 void sccb_deinit(void) {
     if (s_i2c) {
-        i2c_deinit(s_i2c);
+        if (s_owns_bus) {
+            i2c_deinit(s_i2c);
+        }
         s_i2c = NULL;
+        s_owns_bus = false;
     }
 }
 

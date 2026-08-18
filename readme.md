@@ -100,6 +100,7 @@ camera_config_t config = {
     .frame_size = FRAMESIZE_QVGA,
     .jpeg_quality = 10,
     .fb_count = 1,
+    .fb_location = PICO_CAMERA_FB_AUTO,
 };
 
 void setup() {
@@ -129,7 +130,9 @@ if (s) {
 ## Differences from esp32-camera
 
 - Data pins `pin_d0..pin_d7` must be **8 consecutive GPIOs** (a hardware limitation of the PIO `in pins` instruction); validated at init
-- No PSRAM; frame buffers live in SRAM (264KB). For RGB565 stay at or below QVGA in practice; the JPEG buffer is estimated as `width*height/4 + 8KB`
+- SCCB pins are hard-muxed (real I2C, not bit-banged like ESP32): SDA on even GPIOs, SCL on odd GPIOs, and the pair must route to `sccb_i2c_port` — SDA GP0/4/8...28 and SCL GP1/5/9...29 for I2C0, SDA GP2/6/10...26 and SCL GP3/7/11...27 for I2C1 (extended to GP47 on RP2350). Validated at init
+- On RP2350 boards with PSRAM (enabled via the core's PSRAM menu), frame buffers can live in PSRAM — set `fb_location = PICO_CAMERA_FB_IN_PSRAM` to open up larger frame sizes. The default `PICO_CAMERA_FB_AUTO` uses PSRAM when available and **falls back to SRAM** otherwise (unlike esp32-camera, which fails init). RP2040 always uses SRAM (264KB): for RGB565 stay at or below QVGA in practice; the JPEG buffer is estimated as `width*height/4 + 8KB`
+- SCCB can share an already initialized I2C bus: set `pin_sccb_sda = -1` and pick the bus with `sccb_i2c_port` (e.g. `1` to reuse `Wire1`, esp32-camera parity). You must `Wire1.begin()` (or `i2c_init()`) first; the library never touches or deinitializes a shared bus
 - `grab_mode` is not supported: `pico_camera_fb_get()` captures one frame blocking (equivalent to `CAMERA_GRAB_WHEN_EMPTY`)
 
 ## Examples
