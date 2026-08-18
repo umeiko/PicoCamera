@@ -53,6 +53,18 @@ typedef int pico_camera_err_t;
 #define PICO_CAMERA_ERR_FAILED_TO_SET_FRAME_SIZE  (PICO_CAMERA_ERR_BASE - 2)
 #define PICO_CAMERA_ERR_FAILED_TO_SET_OUT_FORMAT  (PICO_CAMERA_ERR_BASE - 3)
 
+/* Library version, kept in sync with library.properties / library.json.
+ * When a copy installed from the Library Manager overrides a (possibly older)
+ * copy bundled with the Arduino core, these macros describe the copy the
+ * sketch actually compiled against. */
+#define PICO_CAMERA_VERSION_MAJOR   0
+#define PICO_CAMERA_VERSION_MINOR   3
+#define PICO_CAMERA_VERSION_PATCH   0
+#define PICO_CAMERA_VERSION_HEX     ((PICO_CAMERA_VERSION_MAJOR << 16) | \
+                                     (PICO_CAMERA_VERSION_MINOR << 8) |  \
+                                     PICO_CAMERA_VERSION_PATCH)
+#define PICO_CAMERA_VERSION_STRING  "0.3.0"
+
 /**
  * @brief Configuration structure for camera initialization
  *

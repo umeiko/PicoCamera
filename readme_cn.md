@@ -44,7 +44,7 @@ PicoCamera 已上架 [PlatformIO Registry](https://registry.platformio.org/libra
 
 ```ini
 lib_deps =
-    umeiko/PicoCamera@^0.2.0
+    umeiko/PicoCamera@^0.3.0
 ```
 
 也可以直接用 git 地址（`lib_deps = https://github.com/umeiko/PicoCamera.git`）或本地 `file://` 路径。
@@ -61,6 +61,17 @@ target_link_libraries(my_app pico_stdlib pico_camera)
 完整工程见 [examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture)，细节见[使用指南](docs/user_guide_zh.md)。
 
 Arduino / PlatformIO 两种方式需要 earlephilhower 的 [arduino-pico](https://github.com/earlephilhower/arduino-pico) 核心。
+
+### 如果核心已经内置了 PicoCamera
+
+较新的 arduino-pico 版本可能自带一份 PicoCamera。你自己安装的副本（Library Manager、PlatformIO `lib_deps`、git）始终优先于内置副本，因此无需等待核心发版就能用上最新版。可以用 `pico_camera.h` 里的宏确认当前编译进程序的是哪个版本：
+
+```cpp
+Serial.println(PICO_CAMERA_VERSION_STRING);        // 例如 "0.3.0"
+#if PICO_CAMERA_VERSION_HEX >= 0x00030000          // 特性开关
+...
+#endif
+```
 
 ## 快速开始
 

@@ -1,6 +1,6 @@
 {
     "name": "PicoCamera",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Camera library for RP2040 with an esp32-camera compatible API. PIO + DMA based capture, runtime pin configuration, OV2640/OV3660 support (RGB565 and JPEG).",
     "keywords": "camera, ov2640, ov3660, rp2040, pico, pio, dma, esp32-camera",
     "authors": [

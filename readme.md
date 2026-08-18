@@ -44,7 +44,7 @@ PicoCamera is published in the [PlatformIO Registry](https://registry.platformio
 
 ```ini
 lib_deps =
-    umeiko/PicoCamera@^0.2.0
+    umeiko/PicoCamera@^0.3.0
 ```
 
 A git URL (`lib_deps = https://github.com/umeiko/PicoCamera.git`) or a local `file://` path works too.
@@ -61,6 +61,21 @@ target_link_libraries(my_app pico_stdlib pico_camera)
 See [examples/pico_sdk_capture](https://github.com/umeiko/PicoCamera/tree/main/examples/pico_sdk_capture) for a complete project, and the [user guide](docs/user_guide.md) for details.
 
 Both Arduino/PlatformIO require the earlephilhower [arduino-pico](https://github.com/earlephilhower/arduino-pico) core.
+
+### If your core bundles PicoCamera
+
+Newer arduino-pico releases may bundle a copy of PicoCamera. A copy you
+install yourself (Library Manager, PlatformIO `lib_deps`, git) always takes
+priority over the bundled one, so you can track the latest release without
+waiting for a core release. To check which version your sketch compiled
+against, use the macros from `pico_camera.h`:
+
+```cpp
+Serial.println(PICO_CAMERA_VERSION_STRING);        // e.g. "0.3.0"
+#if PICO_CAMERA_VERSION_HEX >= 0x00030000          // feature guards
+...
+#endif
+```
 
 ## Quick start
 
