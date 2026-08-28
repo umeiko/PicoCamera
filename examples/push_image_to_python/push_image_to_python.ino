@@ -16,6 +16,14 @@
  * Pick the format with the PUSH_FORMAT macro below, then run
  * push_image_to_python.py on the PC to view the stream.
  *
+ * Note on frame rate: capture and USB transmission run back-to-back in
+ * loop(), so the viewer fps is bounded by the link throughput. This USB
+ * CDC link (Arduino-Pico Serial + pyserial) measures ~320 KB/s, i.e.
+ * roughly 320/frame_size_KB frames per second: a raw RGB565 QVGA frame
+ * is ~150KB (~2 fps), QQVGA ~38KB (~8 fps), while a JPEG frame is only
+ * ~10-20KB and no longer transport-bound. Lower the frame_size (or use
+ * JPEG) if you want a smoother stream.
+ *
  * Wiring: see CameraSerialInfo.
  * The python receiver script: https://github.com/umeiko/PicoCamera/blob/main/examples/push_image_to_python/push_image_to_python.py
  */
@@ -28,7 +36,7 @@
 
 static camera_config_t config = {
   .pin_pwdn     = -1,
-  .pin_reset    = 29,
+  .pin_reset    = -1,   // no hardware reset line; the driver soft-resets via SCCB
   .pin_xclk     = 5,
   .pin_sccb_sda = 12,
   .pin_sccb_scl = 13,

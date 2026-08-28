@@ -17,7 +17,7 @@
  * folder.
  *
  * Camera wiring (adjust to your board):
- *   XCLK=GP5  SIOD=GP12  SIOC=GP13  RESET=GP29  PWDN=NC
+ *   XCLK=GP5  SIOD=GP12  SIOC=GP13  RESET=NC  PWDN=NC
  *   VSYNC=GP2  HREF=GP3  PCLK=GP4
  *   D0..D7 = GP14..GP21 (sensor Y2..Y9, must be consecutive)
  */
@@ -30,7 +30,7 @@ TFT_eSPI tft = TFT_eSPI();
 
 static camera_config_t cam_config = {
   .pin_pwdn     = -1,
-  .pin_reset    = 29,
+  .pin_reset    = -1,   // no hardware reset line; the driver soft-resets via SCCB
   .pin_xclk     = 5,
   .pin_sccb_sda = 12,
   .pin_sccb_scl = 13,

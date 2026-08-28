@@ -54,4 +54,5 @@ python push_image_to_python.py
 - JPEG 模式要求传感器带 JPEG 编码器（OV2640/OV3660);OV7670 无编码器，用 JPEG 模式 `pico_camera_init()` 会返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`，请改用 `PUSH_FORMAT 0`(RGB565)
 - RGB565 模式按固定尺寸 320x240 解析；如下位机改了 `frame_size`，请同步修改 py 文件顶部的 `RGB_WIDTH` / `RGB_HEIGHT`
 - RGB565 推荐先用 JPEG 模式验证链路（数据量小一个数量级，帧率高得多）;RGB565 原始流约 150KB/帧，USB CDC 下帧率有限
+- 帧率受链路吞吐限制：下位机里采集和 USB 发送是串行进行的，这条 USB CDC 链路（Arduino-Pico `Serial` + pyserial）实测约 320 KB/s。估算公式：上位机帧率 ≈ 320 ÷ 单帧大小(KB)——QVGA RGB565（约 150KB）约 2 fps,QQVGA（约 38KB）约 8 fps,JPEG 帧（约 10-20KB）则不再受传输限制。想要更流畅的原始流就降低 `frame_size`
 - 上位机解析 JPEG 帧时以 `FFD8` 开头校验，避免因 JPEG 熵数据中偶现 `EJPG` 字节序列导致错帧

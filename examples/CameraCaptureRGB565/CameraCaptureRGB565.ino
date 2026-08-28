@@ -16,7 +16,7 @@
 
 static camera_config_t config = {
   .pin_pwdn     = -1,
-  .pin_reset    = 29,
+  .pin_reset    = -1,   // no hardware reset line; the driver soft-resets via SCCB
   .pin_xclk     = 5,
   .pin_sccb_sda = 12,
   .pin_sccb_scl = 13,
@@ -59,9 +59,16 @@ void setup() {
       s->set_hmirror(s, 0);
     }
   }
+
+  const camera_sensor_info_t *info = pico_camera_sensor_info_get();
+  Serial.printf("Sensor: %s (PID 0x%04X)\n", info->name, info->pid);
 }
 
 void loop() {
+  // fb_get() waits for the next VSYNC boundary and then captures one whole
+  // frame, so a call takes 1..2 frame periods; the fastest call seen so far
+  // approximates the sensor's frame time.
+  static uint32_t min_capture_ms = UINT32_MAX;
   uint32_t t0 = millis();
   camera_fb_t *fb = pico_camera_fb_get();
   uint32_t t1 = millis();
@@ -71,6 +78,10 @@ void loop() {
     delay(500);
     return;
   }
+  if (t1 - t0 < min_capture_ms) {
+    min_capture_ms = t1 - t0;
+  }
+  unsigned fps_x10 = min_capture_ms ? (unsigned)(10000 / min_capture_ms) : 0;
 
   // Simple checksum so you can see the frame content changing
   uint32_t sum = 0;
@@ -78,9 +89,10 @@ void loop() {
     sum += fb->buf[i];
   }
 
-  Serial.printf("frame %ux%u len=%u captured in %ums checksum=%u\n",
+  Serial.printf("frame %ux%u len=%u captured in %ums checksum=%u, est frame ~%ums (~%u.%u fps)\n",
                 (unsigned)fb->width, (unsigned)fb->height,
-                (unsigned)fb->len, (unsigned)(t1 - t0), (unsigned)sum);
+                (unsigned)fb->len, (unsigned)(t1 - t0), (unsigned)sum,
+                (unsigned)min_capture_ms, fps_x10 / 10, fps_x10 % 10);
 
   pico_camera_fb_return(fb);
   delay(500);
