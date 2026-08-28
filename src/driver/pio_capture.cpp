@@ -245,9 +245,12 @@ int pio_capture_frame(uint8_t *buf, size_t len, uint32_t timeout_ms) {
         return -2;
     }
 
-    // Reset PC to the program start so every frame begins at the VSYNC wait
-    // (after a capture the SM is parked mid-loop otherwise)
+    // Reset PC to the program start so every frame begins at the VSYNC wait.
+    // pio_sm_restart() alone does NOT touch the program counter (see the
+    // hardware_pio docs), so without the forced JMP the SM resumes wherever
+    // it stalled - mid-frame - and the capture starts at a random line.
     pio_sm_restart(s_cap.pio, s_cap.sm_sized);
+    pio_sm_exec(s_cap.pio, s_cap.sm_sized, pio_encode_jmp(s_cap.offset_sized));
     pio_sm_clear_fifos(s_cap.pio, s_cap.sm_sized);
     config_dma(s_cap.sm_sized, buf, len);
     dma_channel_start(s_cap.dma_chan);
@@ -277,9 +280,11 @@ int pio_capture_frame_variable(uint8_t *buf, size_t capacity, size_t *out_len, u
 
     // Enable first, then reset PC to the program start (VSYNC wait) and flush
     // any bytes pushed in between; only then arm the DMA, so nothing stale
-    // can land at the head of the buffer
+    // can land at the head of the buffer. The forced JMP is required because
+    // pio_sm_restart() does not reset the program counter.
     pio_sm_set_enabled(s_cap.pio, s_cap.sm_cont, true);
     pio_sm_restart(s_cap.pio, s_cap.sm_cont);
+    pio_sm_exec(s_cap.pio, s_cap.sm_cont, pio_encode_jmp(s_cap.offset_cont));
     pio_sm_clear_fifos(s_cap.pio, s_cap.sm_cont);
     config_dma(s_cap.sm_cont, buf, capacity);
     dma_channel_start(s_cap.dma_chan);
