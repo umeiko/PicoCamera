@@ -17,6 +17,7 @@
 #include "sensors/ov2640.h"
 #include "sensors/ov3660.h"
 #include "sensors/ov7670.h"
+#include "sensors/gc2145.h"
 
 // Debug output: set to 1 for verbose logging on stdio
 #define PICOCAM_DEBUG 0
@@ -48,10 +49,15 @@ static const camera_sensor_info_t s_info_ov7670 = {
     "OV7670", OV7670_SCCB_ADDR, OV7670_PID, FRAMESIZE_VGA, false  // no JPEG encoder
 };
 
+static const camera_sensor_info_t s_info_gc2145 = {
+    "GC2145", GC2145_SCCB_ADDR, GC2145_PID, FRAMESIZE_UXGA, false  // no JPEG encoder
+};
+
 static const sensor_entry_t s_sensors[] = {
     { &s_info_ov2640, ov2640_detect, ov2640_init_sensor },
     { &s_info_ov3660, ov3660_detect, ov3660_init_sensor },
     { &s_info_ov7670, ov7670_detect, ov7670_init_sensor },
+    { &s_info_gc2145, gc2145_detect, gc2145_init_sensor },
 };
 
 // ---------------------------------------------------------------------------
@@ -224,6 +230,14 @@ pico_camera_err_t pico_camera_init(const camera_config_t *config) {
     if (!found) {
         PC_LOG("[PicoCamera] ERROR: no supported sensor detected\n");
         return PICO_CAMERA_ERR_NOT_DETECTED;
+    }
+
+    // Software reset through SCCB so the sensor always restarts from its
+    // default register set, even when no hardware reset line is wired
+    // (pin_reset = -1). Without this the sensor keeps whatever state the
+    // previous firmware left behind and later setup calls can fail.
+    if (s_cam.sensor.reset) {
+        s_cam.sensor.reset(&s_cam.sensor);
     }
 
     // Reject requests the detected sensor cannot satisfy (esp32-camera parity):

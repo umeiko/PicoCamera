@@ -20,7 +20,7 @@ Everything the driver needs is supplied once, at init time, through
 | `pin_vsync` / `pin_href` / `pin_pclk` | Frame sync / line sync / pixel clock inputs | Free choice of GPIO |
 | `xclk_freq_hz` | XCLK frequency in Hz | `0` selects the default 10 MHz; 10–24 MHz is the typical sensor range |
 | `sccb_i2c_port` | RP2040 I2C peripheral used for SCCB | `0` or `1`; in shared-bus mode (`pin_sccb_sda = -1`) selects which initialized bus to reuse |
-| `pixel_format` | `PIXFORMAT_RGB565` or `PIXFORMAT_JPEG` | JPEG requires a sensor with an on-chip encoder (OV2640/OV3660 yes, OV7670 no) |
+| `pixel_format` | `PIXFORMAT_RGB565` or `PIXFORMAT_JPEG` | JPEG requires a sensor with an on-chip encoder (OV2640/OV3660 yes, OV7670/GC2145 no) |
 | `frame_size` | `FRAMESIZE_*` enum | Beyond-sensor sizes are clamped to the sensor maximum with a warning instead of failing |
 | `jpeg_quality` | 0–63, **lower = higher quality** | JPEG mode only |
 | `fb_count` | Number of frame buffers to allocate | Buffers live in SRAM (264 KB total) unless PSRAM is used; see the memory notes below |
@@ -148,19 +148,19 @@ Available operations:
 | `set_xclk(timer, xclk)` | Change XCLK at runtime (`timer` unused on RP2040) |
 | `reset()` | Sensor soft reset |
 
-Per-sensor support (as of v0.2.0):
+Per-sensor support (as of v0.4.0):
 
-| Operation | OV2640 | OV3660 | OV7670 |
-|-----------|:------:|:------:|:------:|
-| pixformat / framesize | ✅ | ✅ | ✅ |
-| hmirror / vflip | ✅ | ✅ | ✅ |
-| brightness / contrast / saturation / sharpness | ✅ | — | — |
-| gainceiling / quality | ✅ | — | — (no JPEG) |
-| colorbar | ✅ | — | ✅ |
-| whitebal / wb_mode | ✅ | — | whitebal only |
-| gain_ctrl / exposure_ctrl | ✅ | — | ✅ |
-| ae_level / aec_value / special_effect | ✅ | — | — |
-| set_reg / get_reg | ✅ | ✅ | ✅ |
+| Operation | OV2640 | OV3660 | OV7670 | GC2145 |
+|-----------|:------:|:------:|:------:|:------:|
+| pixformat / framesize | ✅ | ✅ | ✅ | ✅ (RGB565 only) |
+| hmirror / vflip | ✅ | ✅ | ✅ | ✅ |
+| brightness / contrast / saturation / sharpness | ✅ | — | — | — |
+| gainceiling / quality | ✅ | — | — (no JPEG) | — (no JPEG) |
+| colorbar | ✅ | — | ✅ | — |
+| whitebal / wb_mode | ✅ | — | whitebal only | — |
+| gain_ctrl / exposure_ctrl | ✅ | — | ✅ | — |
+| ae_level / aec_value / special_effect | ✅ | — | — | — |
+| set_reg / get_reg | ✅ | ✅ | ✅ | ✅ |
 
 ## 5. Sensor identification
 

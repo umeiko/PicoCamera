@@ -1,7 +1,7 @@
 /**
  * PicoCamera minimal Pico SDK example — no Arduino core involved.
  *
- * Initializes the camera (OV2640/OV3660/OV7670), captures frames in a
+ * Initializes the camera (OV2640/OV3660/OV7670/GC2145), captures frames in a
  * loop and prints frame info over USB serial. With PIXFORMAT_JPEG the
  * buffer is a complete JPEG file and its SOI/EOI markers are checked.
  *
