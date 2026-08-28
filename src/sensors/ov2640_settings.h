@@ -329,7 +329,7 @@ static const uint8_t ov2640_settings_to_uxga[][2] = {
 static const uint8_t ov2640_settings_rgb565[][2] = {
     {BANK_SEL, BANK_SEL_DSP},
     {RESET, RESET_DVP},
-    {IMAGE_MODE, IMAGE_MODE_RGB565 | IMAGE_MODE_LBYTE_FIRST},
+    {IMAGE_MODE, IMAGE_MODE_RGB565},  // high byte first, matching esp32-camera's wire order
     {0xD7, 0x03},
     {0xE1, 0x77},
     {RESET, 0x00},

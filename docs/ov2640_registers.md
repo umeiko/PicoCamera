@@ -235,7 +235,7 @@ OV2640 上电后的完整初始化（以 CIF 模式收尾）。大致阶段：
 
 ### 3.5 `ov2640_settings_rgb565`（6 条）——切换 RGB565 输出
 
-切 DSP bank → `RESET = RESET_DVP` → `IMAGE_MODE = IMAGE_MODE_RGB565 | LBYTE_FIRST`（RGB565 格式、低字节先行）→ 两个保留寄存器（0xD7/0xE1）→ `RESET = 0x00` 释放复位。
+切 DSP bank → `RESET = RESET_DVP` → `IMAGE_MODE = IMAGE_MODE_RGB565`（RGB565 格式、高字节先行，与 esp32-camera 线上字节序一致）→ 两个保留寄存器（0xD7/0xE1）→ `RESET = 0x00` 释放复位。
 
 ### 3.6 `ov2640_settings_jpeg`（13 条）——切换 JPEG 输出
 
