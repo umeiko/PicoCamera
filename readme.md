@@ -59,7 +59,7 @@ PicoCamera is published in the [PlatformIO Registry](https://registry.platformio
 
 ```ini
 lib_deps =
-    umeiko/PicoCamera@^0.3.0
+    umeiko/PicoCamera@^0.4.1
 ```
 
 A git URL (`lib_deps = https://github.com/umeiko/PicoCamera.git`) or a local `file://` path works too.

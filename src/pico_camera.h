@@ -60,11 +60,11 @@ typedef int pico_camera_err_t;
  * sketch actually compiled against. */
 #define PICO_CAMERA_VERSION_MAJOR   0
 #define PICO_CAMERA_VERSION_MINOR   4
-#define PICO_CAMERA_VERSION_PATCH   0
+#define PICO_CAMERA_VERSION_PATCH   1
 #define PICO_CAMERA_VERSION_HEX     ((PICO_CAMERA_VERSION_MAJOR << 16) | \
                                      (PICO_CAMERA_VERSION_MINOR << 8) |  \
                                      PICO_CAMERA_VERSION_PATCH)
-#define PICO_CAMERA_VERSION_STRING  "0.4.0"
+#define PICO_CAMERA_VERSION_STRING  "0.4.1"
 
 /**
  * @brief Frame buffer location

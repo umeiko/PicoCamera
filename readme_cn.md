@@ -59,7 +59,7 @@ PicoCamera 已上架 [PlatformIO Registry](https://registry.platformio.org/libra
 
 ```ini
 lib_deps =
-    umeiko/PicoCamera@^0.3.0
+    umeiko/PicoCamera@^0.4.1
 ```
 
 也可以直接用 git 地址（`lib_deps = https://github.com/umeiko/PicoCamera.git`）或本地 `file://` 路径。
