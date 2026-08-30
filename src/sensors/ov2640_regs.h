@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 #ifndef __OV2640_REGS_H__
 #define __OV2640_REGS_H__
 /* DSP register bank FF=0x00*/

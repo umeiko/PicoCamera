@@ -19,7 +19,7 @@
 | `pin_vsync` / `pin_href` / `pin_pclk` | 帧同步 / 行同步 / 像素时钟输入 | GPIO 任选 |
 | `xclk_freq_hz` | XCLK 频率（Hz） | `0` 表示默认 10 MHz；传感器一般接受 10–24 MHz |
 | `sccb_i2c_port` | SCCB 使用的 RP2040 I2C 外设号 | `0` 或 `1`；共享总线模式（`pin_sccb_sda = -1`）下选择复用哪条已初始化的总线 |
-| `pixel_format` | `PIXFORMAT_RGB565` 或 `PIXFORMAT_JPEG` | JPEG 要求传感器自带编码器（OV2640/OV3660 支持，OV7670/GC2145 不支持） |
+| `pixel_format` | `PIXFORMAT_RGB565`、`PIXFORMAT_YUV422`、`PIXFORMAT_GRAYSCALE` 或 `PIXFORMAT_JPEG` | YUV422 输出为 packed YUYV（2 字节/像素，OV2640/OV3660/OV7670/GC2145/GC0308 已支持）。GRAYSCALE 为纯 Y 输出（1 字节/像素，GC0308 已支持）。JPEG 要求传感器自带编码器（OV2640/OV3660 支持，OV7670/GC2145/GC0308/GC032A 不支持） |
 | `frame_size` | `FRAMESIZE_*` 枚举 | 超过传感器上限时不报错，告警并钳位到最大值 |
 | `jpeg_quality` | 0–63，**越小画质越高** | 仅 JPEG 模式有效 |
 | `fb_count` | 帧缓冲数量 | 默认缓冲位于 SRAM（共 264 KB），也可用 PSRAM，见下方内存估算 |
@@ -138,19 +138,19 @@ if (s && s->set_vflip) s->set_vflip(s, 1);
 | `set_xclk(timer, xclk)` | 运行时改 XCLK 频率（RP2040 上 `timer` 参数不用） |
 | `reset()` | 传感器软复位 |
 
-各传感器支持情况（截至 v0.4.0）：
+各传感器支持情况：
 
-| 操作 | OV2640 | OV3660 | OV7670 | GC2145 |
-|------|:------:|:------:|:------:|:------:|
-| pixformat / framesize | ✅ | ✅ | ✅ | ✅（仅 RGB565） |
-| hmirror / vflip | ✅ | ✅ | ✅ | ✅ |
-| brightness / contrast / saturation / sharpness | ✅ | — | — | — |
-| gainceiling / quality | ✅ | — | —（无 JPEG） | —（无 JPEG） |
-| colorbar | ✅ | — | ✅ | — |
-| whitebal / wb_mode | ✅ | — | 仅 whitebal | — |
-| gain_ctrl / exposure_ctrl | ✅ | — | ✅ | — |
-| ae_level / aec_value / special_effect | ✅ | — | — | — |
-| set_reg / get_reg | ✅ | ✅ | ✅ | ✅ |
+| 操作 | OV2640 | OV3660 | OV7670 | GC2145 | GC0308 | GC032A |
+|------|:------:|:------:|:------:|:------:|:------:|:------:|
+| pixformat / framesize | ✅ | ✅ | ✅ | ✅（仅 RGB565） | ✅（仅 RGB565） | ✅（仅 RGB565） |
+| hmirror / vflip | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| brightness / contrast / saturation / sharpness | ✅ | — | — | — | — | — |
+| gainceiling / quality | ✅ | — | —（无 JPEG） | —（无 JPEG） | —（无 JPEG） | —（无 JPEG） |
+| colorbar | ✅ | — | ✅ | — | — | ✅ |
+| whitebal / wb_mode | ✅ | — | 仅 whitebal | — | — | — |
+| gain_ctrl / exposure_ctrl | ✅ | — | ✅ | — | — | — |
+| ae_level / aec_value / special_effect | ✅ | — | — | — | — | — |
+| set_reg / get_reg | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## 5. 传感器信息
 

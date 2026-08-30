@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * @file ov3660_settings.h
  * @brief OV3660 register tables (16-bit addresses).
@@ -283,6 +291,12 @@ static const uint16_t ov3660_settings_jpeg[][2] = {
 static const uint16_t ov3660_settings_rgb565[][2] = {
     {FORMAT_CTRL, 0x01}, // RGB
     {FORMAT_CTRL00, 0x61}, // RGB565 (BGR)
+    {REGLIST_TAIL, 0x00}
+};
+
+static const uint16_t ov3660_settings_yuv422[][2] = {
+    {FORMAT_CTRL, 0x00}, // YUV422
+    {FORMAT_CTRL00, 0x30}, // YUYV
     {REGLIST_TAIL, 0x00}
 };
 

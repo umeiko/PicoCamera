@@ -1,4 +1,12 @@
 /*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
+/*
  * This file is for the OpenMV project so the OV7670 can be used
  * author: Juan Schiavoni <juanjoseschiavoni@hotmail.com>
  *
@@ -173,6 +181,7 @@
 #define COM13                   0x3D /* Common control 13 */
 #define   COM13_GAMMA	        0x80 /* Gamma enable */
 #define	  COM13_UVSAT	        0x40 /* UV saturation auto adjustment */
+#define   COM13_UVSWAP	        0x01 /* Swap U/V in the YUV output byte stream */
 
 #define COM14                   0x3E /* Common Control 14 */
 

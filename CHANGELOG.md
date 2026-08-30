@@ -3,6 +3,33 @@
 All notable changes to PicoCamera are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.2] - 2026-08-30
+
+### Added
+
+- **GC0308 sensor support** (RGB565, up to VGA; no on-chip JPEG encoder).
+  Driver adapted from esp32-camera (Apache-2.0), hardware-verified on RP2040.
+- **GC032A sensor support** (RGB565, up to VGA; no on-chip JPEG encoder).
+  Driver adapted from esp32-camera, with host-specific tweaks for the RP2040
+  capture path: PLL/DVP clock division and VSYNC polarity (P0_SYNC_MODE bit0
+  cleared — with the esp32-camera default the frame capture never sees a
+  VSYNC edge and times out silently). Detection, streaming and the colorbar
+  test pattern verified on RP2040; full image quality still pending a
+  replacement module (the first unit shipped with two dead data lines).
+  Marked **untested** in the readme until then.
+- **OV7725 sensor support** (RGB565, up to VGA; no on-chip JPEG encoder).
+  Driver adapted from esp32-camera (OpenMV, MIT). Marked **untested** — no
+  genuine OV7725 module at hand yet.
+- **`PIXFORMAT_YUV422` output** (packed YUYV, 2 bytes/pixel) for
+  OV2640/OV3660/OV7670/GC2145/GC0308, hardware-verified on RP2040. On the
+  OV7670 this required `COM13` bit0 (UV swap): the sensor emits YVYU, which
+  esp32-camera never notices because the ESP32 capture hardware swaps bytes.
+- **`PIXFORMAT_GRAYSCALE` output** (Y only, 1 byte/pixel) for GC0308.
+- `pico_camera_err_str()` — maps an error code to a human-readable string;
+  all examples now print the failure reason instead of a bare number.
+- push_image_to_python: the viewer decodes YUV422 and grayscale frames and
+  shows the active protocol next to the fps counter.
+
 ## [0.4.1] - 2026-08-27
 
 ### Added

@@ -16,30 +16,30 @@ RP2040 摄像头库，API 与 [esp32-camera](https://github.com/espressif/esp32-
 
 ## 支持的传感器
 
-传感器列表与 [esp32-camera](https://github.com/espressif/esp32-camera) 对齐，最后一列标注 PicoCamera 当前的支持进度：
+传感器列表与 [esp32-camera](https://github.com/espressif/esp32-camera) 对齐（输出格式措辞已统一，如 YCbCr422 → YUV422、compression → JPEG），最后一列标注 PicoCamera 当前的支持进度：
 
 | 型号    | 最大分辨率 | 色彩类型 | 输出格式                                                      | 支持进度 |
 | ------- | ---------- | -------- | ------------------------------------------------------------ | -------- |
-| OV2640  | 1600 x 1200    | color      | YUV(422/420)/YCbCr422<br>RGB565/555<br>8-bit compressed data<br>8/10-bit Raw RGB data | ✅ RGB565 + JPEG |
-| OV3660  | 2048 x 1536    | color      | raw RGB data<br/>RGB565/555/444<br/>CCIR656<br/>YCbCr422<br/>compression | ✅ RGB565 + JPEG |
-| OV5640  | 2592 x 1944    | color      | RAW RGB<br/>RGB565/555/444<br/>CCIR656<br/>YUV422/420<br/>YCbCr422<br/>compression | ❌ 暂不支持 |
-| OV7670  | 640 x 480      | color      | Raw Bayer RGB<br/>Processed Bayer RGB<br>YUV/YCbCr422<br>GRB422<br>RGB565/555 | ✅ RGB565（无 JPEG 编码器） |
-| OV7725  | 640 x 480      | color      | Raw RGB<br/>GRB 422<br/>RGB565/555/444<br/>YCbCr 422         | ❌ 暂不支持 |
-| NT99141 | 1280 x 720     | color      | YCbCr 422<br/>RGB565/555/444<br/>Raw<br/>CCIR656<br/>JPEG compression | ❌ 暂不支持 |
-| GC032A  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | ❌ 暂不支持 |
-| GC0308  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565<br/>Grayscale          | ❌ 暂不支持 |
-| GC2145  | 1600 x 1200    | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | ✅ RGB565（无 JPEG 编码器） |
-| BF3005  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | ❌ 暂不支持 |
-| BF20A6  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>Only Y                        | ❌ 暂不支持 |
-| SC101IOT| 1280 x 720     | color      | YUV/YCbCr422<br/>Raw RGB                                     | ❌ 暂不支持 |
-| SC030IOT| 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer                                   | ❌ 暂不支持 |
-| SC031GS | 640 x 480      | monochrome | RAW MONO<br/>Grayscale                                       | ❌ 暂不支持 |
-| HM0360  | 656 x 496      | monochrome | RAW MONO<br/>Grayscale                                       | ❌ 暂不支持 |
-| HM1055  | 1280 x 720     | color      | 8/10-bit Raw<br/>YUV/YCbCr422<br/>RGB565/555/444             | ❌ 暂不支持 |
+| OV2640  | 1600 x 1200    | color      | YUV422/420<br>RGB565/555<br>JPEG<br>RAW RGB (8/10-bit) | ✅ RGB565 + YUV422 + JPEG |
+| OV3660  | 2048 x 1536    | color      | RAW RGB<br>RGB565/555/444<br>CCIR656<br>YUV422<br>JPEG | ✅ RGB565 + YUV422 + JPEG |
+| OV5640  | 2592 x 1944    | color      | RAW RGB<br>RGB565/555/444<br>CCIR656<br>YUV422/420<br>JPEG | ❌ 暂不支持 |
+| OV7670  | 640 x 480      | color      | RAW Bayer<br>Processed Bayer<br>YUV422<br>GRB422<br>RGB565/555 | ✅ RGB565 + YUV422（无 JPEG 编码器） |
+| OV7725  | 640 x 480      | color      | RAW RGB<br>GRB422<br>RGB565/555/444<br>YUV422         | RGB565（无 JPEG 编码器，未实测） |
+| NT99141 | 1280 x 720     | color      | YUV422<br>RGB565/555/444<br>RAW<br>CCIR656<br>JPEG | ❌ 暂不支持 |
+| GC032A  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565                        | RGB565（无 JPEG 编码器，未实测） |
+| GC0308  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565<br>Grayscale          | ✅ RGB565 + YUV422 + 灰度（无 JPEG 编码器） |
+| GC2145  | 1600 x 1200    | color      | YUV422<br>RAW Bayer<br>RGB565                        | ✅ RGB565 + YUV422（无 JPEG 编码器） |
+| BF3005  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565                        | ❌ 暂不支持 |
+| BF20A6  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>Y-only                        | ❌ 暂不支持 |
+| SC101IOT| 1280 x 720     | color      | YUV422<br>RAW RGB                                     | ❌ 暂不支持 |
+| SC030IOT| 640 x 480      | color      | YUV422<br>RAW Bayer                                   | ❌ 暂不支持 |
+| SC031GS | 640 x 480      | monochrome | RAW MONO<br>Grayscale                                       | ❌ 暂不支持 |
+| HM0360  | 656 x 496      | monochrome | RAW MONO<br>Grayscale                                       | ❌ 暂不支持 |
+| HM1055  | 1280 x 720     | color      | RAW (8/10-bit)<br>YUV422<br>RGB565/555/444             | ❌ 暂不支持 |
 
 所有已支持的传感器还提供 `set_reg`/`get_reg` 原始寄存器读写；更多控制项按需移植。
 
-**对无 JPEG 编码器的传感器（如 OV7670、GC2145）请求 JPEG**,`pico_camera_init()` 会返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`——与 esp32-camera 行为一致。`frame_size` 超过传感器上限时不报错，告警并钳位到最大值。
+**对无 JPEG 编码器的传感器（如 OV7670、GC2145、GC0308、GC032A）请求 JPEG**,`pico_camera_init()` 会返回 `PICO_CAMERA_ERR_NOT_SUPPORTED`——与 esp32-camera 行为一致。`frame_size` 超过传感器上限时不报错，告警并钳位到最大值。
 
 ## 安装
 

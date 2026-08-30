@@ -7,8 +7,10 @@
  */
 
 /**
- * @file ov2640.h
- * @brief OV2640 sensor driver (8-bit SCCB register addresses).
+ * @file gc032a.h
+ * @brief GC032A sensor driver (8-bit SCCB register addresses).
+ *
+ * The GC032A has no JPEG encoder: RGB565 only, up to VGA (640x480).
  */
 #pragma once
 
@@ -18,20 +20,20 @@
 extern "C" {
 #endif
 
-#define OV2640_SCCB_ADDR    0x30    // 0x60 >> 1
-#define OV2640_PID          0x2642
+#define GC032A_SCCB_ADDR    0x21    // 0x42 >> 1
+#define GC032A_PID          0x232A
 
 /**
- * @brief Probe the bus for an OV2640. On success fills sensor->id.
+ * @brief Probe the bus for a GC032A. On success fills sensor->id.
  * @return 0 if detected
  */
-int ov2640_detect(sensor_t *sensor);
+int gc032a_detect(sensor_t *sensor);
 
 /**
  * @brief Fill sensor_t function pointers and write the default register set.
  * @return 0 on success
  */
-int ov2640_init_sensor(sensor_t *sensor);
+int gc032a_init_sensor(sensor_t *sensor);
 
 #ifdef __cplusplus
 }

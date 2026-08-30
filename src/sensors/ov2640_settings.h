@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 #ifndef OV2640_INIT_H
 #define OV2640_INIT_H
 #include <stdint.h>
@@ -323,6 +331,16 @@ static const uint8_t ov2640_settings_to_uxga[][2] = {
     {CTRL2, CTRL2_DCW_EN | 0x1d},
     {CTRLI, 0x00},
     //{R_DVP_SP, 0x06},
+    ENDMARKER
+};
+
+static const uint8_t ov2640_settings_yuv422[][2] = {
+    {BANK_SEL, BANK_SEL_DSP},
+    {RESET, RESET_DVP},
+    {IMAGE_MODE, IMAGE_MODE_YUV422},
+    {0xD7, 0x01},
+    {0xE1, 0x67},
+    {RESET, 0x00},
     ENDMARKER
 };
 

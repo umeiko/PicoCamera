@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * @file ov7670.cpp
  * @brief OV7670 sensor driver.
@@ -67,6 +75,23 @@ static const uint8_t ov7670_default_regs[][2] = {
     {COM8, COM8_FAST_AUTO | COM8_STEP_UNLIMIT | COM8_AGC_EN | COM8_AEC_EN | COM8_AWB_EN},
 
     {0xFF, 0xFF},  // end marker
+};
+
+static const uint8_t ov7670_fmt_yuv422[][2] = {
+    {COM7,     0x0                       },  /* Selects YUV mode */
+    {RGB444,   0                         },  /* No RGB444 please */
+    {COM1,     0                         },  /* CCIR601 */
+    {COM15,    COM15_R00FF               },
+    {MVFP,     MVFP_SUN                  },
+    {COM9,     0x6A                      },  /* 128x gain ceiling; 0x8 is reserved bit */
+    {MTX1,     0x80                      },  /* "matrix coefficient 1" */
+    {MTX2,     0x80                      },  /* "matrix coefficient 2" */
+    {MTX3,     0                         },  /* vb */
+    {MTX4,     0x22                      },  /* "matrix coefficient 4" */
+    {MTX5,     0x5e                      },  /* "matrix coefficient 5" */
+    {MTX6,     0x80                      },  /* "matrix coefficient 6" */
+    {COM13,    COM13_UVSAT | COM13_UVSWAP},  /* UV swap: sensor emits YVYU, we stream YUYV */
+    {0xff,     0xff                      },  // end marker
 };
 
 static const uint8_t ov7670_fmt_rgb565[][2] = {
@@ -173,15 +198,21 @@ static int ov7670_reset(sensor_t *sensor) {
 
 static int ov7670_set_pixformat(sensor_t *sensor, pixformat_t pixformat) {
     (void)sensor;
-    if (pixformat != PIXFORMAT_RGB565) {
+    switch (pixformat) {
+    case PIXFORMAT_RGB565:
+        regs_write(ov7670_fmt_rgb565);
+        sleep_ms(30);
+        // RGB565 requires clkrc to be rewritten after the other parameters
+        reg_write(CLKRC, s_clkrc);
+        return 0;
+    case PIXFORMAT_YUV422:
+        regs_write(ov7670_fmt_yuv422);
+        sleep_ms(30);
+        // ...but in YUV mode clkrc must NOT be rewritten (image degrades)
+        return 0;
+    default:
         return -1;  // OV7670 has no JPEG encoder
     }
-    regs_write(ov7670_fmt_rgb565);
-    sleep_ms(30);
-
-    // RGB565 requires clkrc to be rewritten after the other parameters
-    reg_write(CLKRC, s_clkrc);
-    return 0;
 }
 
 static int ov7670_set_framesize(sensor_t *sensor, framesize_t framesize) {

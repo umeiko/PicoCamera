@@ -1,4 +1,12 @@
 /*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
+/*
  * GC2145 default initialization register table.
  * Ported verbatim from esp32-camera's private_include/gc2145_settings.h
  * (Apache-2.0), comments preserved as-is.

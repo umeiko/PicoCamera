@@ -43,7 +43,7 @@ void setup() {
 
   pico_camera_err_t err = pico_camera_init(&config);
   if (err != PICO_CAMERA_OK) {
-    Serial.printf("pico_camera_init failed: %d\n", err);
+    Serial.printf("pico_camera_init failed: %s (%d)\n", pico_camera_err_str(err), err);
     while (true) {
       delay(1000);
     }

@@ -11,6 +11,8 @@ push_image_to_python - PC viewer for the PicoCamera push_image_to_python sketch.
 Protocol (binary, over USB serial):
     RGB565 frame:  b"SRGB" + width*height*2 raw bytes + b"ERGB"
     JPEG frame:    b"SJPG" + raw JPEG bytes (FFD8...FFD9) + b"EJPG"
+    YUV422 frame:  b"SYUV" + width*height*2 packed YUYV bytes + b"EYUV"
+    GRAYSCALE:     b"SGRY" + width*height raw Y bytes + b"EGRY"
 
 Dependencies (the only two external packages):
     pip install pyserial Pillow
@@ -30,12 +32,14 @@ import serial.tools.list_ports
 from PIL import Image, ImageTk
 
 # Must match the sketch: frame_size FRAMESIZE_QVGA = 320x240
-RGB_WIDTH = 320
-RGB_HEIGHT = 240
-RGB_FRAME_BYTES = RGB_WIDTH * RGB_HEIGHT * 2
+WIDTH = 320
+HEIGHT = 240
+FRAME_BYTES = WIDTH * HEIGHT * 2  # RGB565 and YUV422 are both 2 bytes/pixel
 
 HDR_RGB, TAIL_RGB = b"SRGB", b"ERGB"
 HDR_JPG, TAIL_JPG = b"SJPG", b"EJPG"
+HDR_YUV, TAIL_YUV = b"SYUV", b"EYUV"
+HDR_GRY, TAIL_GRY = b"SGRY", b"EGRY"
 
 BAUD = 115200  # ignored by USB CDC, but pyserial wants one
 
@@ -45,8 +49,30 @@ def rgb565_be_to_image(data: bytes) -> Image.Image:
     swapped = bytearray(len(data))
     swapped[0::2] = data[1::2]   # Pillow "BGR;16" wants little-endian 565
     swapped[1::2] = data[0::2]
-    return Image.frombytes("RGB", (RGB_WIDTH, RGB_HEIGHT),
+    return Image.frombytes("RGB", (WIDTH, HEIGHT),
                            bytes(swapped), "raw", "BGR;16")
+
+
+def yuyv_to_image(data: bytes) -> Image.Image:
+    """Convert packed YUYV (YUV422 wire order) to a Pillow RGB image."""
+    y = bytearray(WIDTH * HEIGHT)
+    cb = bytearray(WIDTH * HEIGHT)
+    cr = bytearray(WIDTH * HEIGHT)
+    y[0::2] = data[0::4]
+    y[1::2] = data[2::4]
+    u, v = data[1::4], data[3::4]
+    cb[0::2] = u  # one chroma sample covers two pixels
+    cb[1::2] = u
+    cr[0::2] = v
+    cr[1::2] = v
+    # NB: build the YCbCr image via merge() of three L planes.
+    # Image.frombytes("YCbCr", ...) misinterprets the buffer layout
+    # (Pillow 12) and produces a scrambled picture.
+    return Image.merge("YCbCr", (
+        Image.frombytes("L", (WIDTH, HEIGHT), bytes(y)),
+        Image.frombytes("L", (WIDTH, HEIGHT), bytes(cb)),
+        Image.frombytes("L", (WIDTH, HEIGHT), bytes(cr)),
+    )).convert("RGB")
 
 
 class SerialReader(threading.Thread):
@@ -75,26 +101,31 @@ class SerialReader(threading.Thread):
                     pass  # GUI is busy; drop the frame, keep the stream live
 
     def _pop_frame(self, buf: bytearray):
-        # find the nearest header of either kind
-        i_rgb = buf.find(HDR_RGB)
-        i_jpg = buf.find(HDR_JPG)
-        if i_rgb == -1 and i_jpg == -1:
+        # find the nearest header of any kind
+        starts = [(i, k) for i, k in
+                  ((buf.find(HDR_RGB), "rgb"),
+                   (buf.find(HDR_JPG), "jpg"),
+                   (buf.find(HDR_YUV), "yuv"),
+                   (buf.find(HDR_GRY), "gray")) if i != -1]
+        if not starts:
             buf.clear()
             return None
-        is_rgb = i_rgb != -1 and (i_jpg == -1 or i_rgb < i_jpg)
-        start = i_rgb if is_rgb else i_jpg
+        start, kind = min(starts)
         del buf[:start]
 
-        if is_rgb:
-            need = 4 + RGB_FRAME_BYTES + 4
+        if kind in ("rgb", "yuv", "gray"):
+            # fixed-length payload: header + payload + trailer
+            nbytes = FRAME_BYTES if kind != "gray" else WIDTH * HEIGHT
+            need = 4 + nbytes + 4
             if len(buf) < need:
                 return None
-            payload = bytes(buf[4:4 + RGB_FRAME_BYTES])
-            if bytes(buf[4 + RGB_FRAME_BYTES:need]) != TAIL_RGB:
+            payload = bytes(buf[4:4 + nbytes])
+            tail = {"rgb": TAIL_RGB, "yuv": TAIL_YUV, "gray": TAIL_GRY}[kind]
+            if bytes(buf[4 + nbytes:need]) != tail:
                 del buf[:4]  # bad trailer: resync after this header
                 return None
             del buf[:need]
-            return ("rgb", payload)
+            return (kind, payload)
 
         # JPEG: payload ends at the EJPG trailer
         end = buf.find(TAIL_JPG, 4)
@@ -143,6 +174,7 @@ class App(tk.Tk):
         self.reader = None
         self.frames = queue.Queue(maxsize=4)
         self.photo = None
+        self.last_kind = None
         self.frames_done = 0
         self.fps_since = time.monotonic()
 
@@ -191,6 +223,10 @@ class App(tk.Tk):
                 try:
                     if kind == "rgb":
                         img = rgb565_be_to_image(payload)
+                    elif kind == "yuv":
+                        img = yuyv_to_image(payload)
+                    elif kind == "gray":
+                        img = Image.frombytes("L", (WIDTH, HEIGHT), payload)
                     else:
                         img = Image.open(io.BytesIO(payload))
                 except Exception as e:
@@ -198,6 +234,7 @@ class App(tk.Tk):
                     continue
                 self.photo = ImageTk.PhotoImage(img)
                 self.image_label.config(image=self.photo)
+                self.last_kind = kind
                 self.frames_done += 1
         except queue.Empty:
             pass
@@ -205,7 +242,12 @@ class App(tk.Tk):
         now = time.monotonic()
         if now - self.fps_since >= 1.0 and self.reader:
             fps = self.frames_done / (now - self.fps_since)
-            self.status_var.set(f"{fps:.1f} fps")
+            proto = {"rgb": "RGB565", "yuv": "YUV422", "gray": "GRAYSCALE",
+                     "jpg": "JPEG"}.get(self.last_kind)
+            if proto:
+                self.status_var.set(f"{proto} {WIDTH}x{HEIGHT} | {fps:.1f} fps")
+            else:
+                self.status_var.set(f"{fps:.1f} fps")
             self.frames_done = 0
             self.fps_since = now
 

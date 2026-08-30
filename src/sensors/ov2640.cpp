@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 #include "ov2640.h"
 
 #include "pico/stdlib.h"
@@ -95,6 +103,9 @@ static int ov2640_set_pixformat(sensor_t *sensor, pixformat_t pixformat) {
     switch (pixformat) {
     case PIXFORMAT_RGB565:
         regs_write(ov2640_settings_rgb565);
+        break;
+    case PIXFORMAT_YUV422:
+        regs_write(ov2640_settings_yuv422);
         break;
     case PIXFORMAT_JPEG:
         regs_write(ov2640_settings_jpeg);

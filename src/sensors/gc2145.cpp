@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * @file gc2145.cpp
  * @brief GC2145 sensor driver.
@@ -109,6 +117,10 @@ static int gc2145_set_pixformat(sensor_t *sensor, pixformat_t pixformat) {
     case PIXFORMAT_RGB565:
         reg_write(RESET_RELATED, 0x00);  // page 0
         ret = set_reg_bits(P0_OUTPUT_FORMAT, 0, 0x1f, 6);  // RGB565
+        break;
+    case PIXFORMAT_YUV422:
+        reg_write(RESET_RELATED, 0x00);  // page 0
+        ret = set_reg_bits(P0_OUTPUT_FORMAT, 0, 0x1f, 2);  // YUV422
         break;
     default:
         return -1;  // GC2145 has no JPEG encoder

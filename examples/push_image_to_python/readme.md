@@ -6,19 +6,21 @@ Streams camera frames over USB serial to a PC, where a Python (tkinter) GUI disp
 
 ## Protocol
 
-Binary frames, two formats:
+Binary frames, four formats:
 
 | Format | Frame layout |
 |--------|--------------|
 | RGB565 | `SRGB` + `width*height*2` raw bytes (big-endian RGB565) + `ERGB` |
 | JPEG | `SJPG` + raw JPEG data (`FFD8...FFD9`) + `EJPG` |
+| YUV422 | `SYUV` + `width*height*2` packed YUYV bytes + `EYUV` |
+| GRAYSCALE | `SGRY` + `width*height` raw Y bytes + `EGRY` |
 
 ## Firmware (`push_image_to_python.ino`)
 
 Select the pushed format with the macro at the top of the sketch before flashing:
 
 ```cpp
-#define PUSH_FORMAT 1   // 1 = JPEG (SJPG...EJPG), 0 = RGB565 (SRGB...ERGB)
+#define PUSH_FORMAT 1   // 0 = RGB565, 1 = JPEG, 2 = YUV422, 3 = GRAYSCALE
 ```
 
 Default resolution is 320x240 (FRAMESIZE_QVGA). Once flashed, the board streams frames continuously; no interaction needed.
@@ -54,7 +56,7 @@ The status bar shows the live frame rate.
 ## Notes
 
 - JPEG mode requires a sensor with a JPEG encoder (OV2640/OV3660); on OV7670 `pico_camera_init()` fails with `PICO_CAMERA_ERR_NOT_SUPPORTED` — use `PUSH_FORMAT 0` (RGB565) there
-- RGB565 mode parses a fixed 320x240 frame; if you change `frame_size` in the sketch, update `RGB_WIDTH` / `RGB_HEIGHT` at the top of the .py file to match
+- RGB565 mode parses a fixed 320x240 frame; if you change `frame_size` in the sketch, update `WIDTH` / `HEIGHT` at the top of the .py file to match
 - Validate the link with JPEG mode first (an order of magnitude less data, much higher frame rate); a raw RGB565 frame is ~150KB, so the frame rate over USB CDC is limited
 - Frame rate is bounded by link throughput: capture and USB transmission run back-to-back in the sketch, and this USB CDC link (Arduino-Pico `Serial` + pyserial) measures ~320 KB/s. Rule of thumb: viewer fps ≈ 320 / frame size in KB — QVGA RGB565 (~150KB) lands at ~2 fps, QQVGA (~38KB) at ~8 fps, JPEG frames (~10-20KB) are no longer transport-bound. Lower `frame_size` for a smoother raw stream
 - The viewer verifies the `FFD8` header on JPEG frames to avoid false `EJPG` trailer matches inside JPEG entropy data

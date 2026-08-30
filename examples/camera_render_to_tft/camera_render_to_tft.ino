@@ -63,7 +63,7 @@ void setup() {
 
   pico_camera_err_t err = pico_camera_init(&cam_config);
   if (err != PICO_CAMERA_OK) {
-    Serial.printf("pico_camera_init failed: %d\n", err);
+    Serial.printf("pico_camera_init failed: %s (%d)\n", pico_camera_err_str(err), err);
     tft.setTextSize(2);
     tft.setCursor(10, DISP_HEIGHT / 2 - 10);
     tft.println("NO Camera");

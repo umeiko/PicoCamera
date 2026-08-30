@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * @file sensor.h
  * @brief Common camera sensor types, aligned with esp32-camera's sensor.h (subset).
@@ -16,6 +24,8 @@ extern "C" {
 
 typedef enum {
     PIXFORMAT_RGB565,   // 2 bytes per pixel
+    PIXFORMAT_YUV422,   // 2 bytes per pixel (YUYV)
+    PIXFORMAT_GRAYSCALE,// 1 byte per pixel (Y only)
     PIXFORMAT_JPEG,     // compressed stream
     PIXFORMAT_INVALID
 } pixformat_t;

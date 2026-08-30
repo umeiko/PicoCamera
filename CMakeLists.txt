@@ -24,7 +24,10 @@ add_library(pico_camera STATIC
     src/sensors/ov2640.cpp
     src/sensors/ov3660.cpp
     src/sensors/ov7670.cpp
+    src/sensors/ov7725.cpp
     src/sensors/gc2145.cpp
+    src/sensors/gc0308.cpp
+    src/sensors/gc032a.cpp
 )
 
 target_include_directories(pico_camera PUBLIC src)

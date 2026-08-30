@@ -7,8 +7,10 @@
  */
 
 /**
- * @file ov2640.h
- * @brief OV2640 sensor driver (8-bit SCCB register addresses).
+ * @file ov7725.h
+ * @brief OV7725 sensor driver (8-bit SCCB register addresses).
+ *
+ * The OV7725 has no JPEG encoder: RGB565 only, up to VGA.
  */
 #pragma once
 
@@ -18,20 +20,20 @@
 extern "C" {
 #endif
 
-#define OV2640_SCCB_ADDR    0x30    // 0x60 >> 1
-#define OV2640_PID          0x2642
+#define OV7725_SCCB_ADDR    0x21    // 0x42 >> 1
+#define OV7725_PID          0x77
 
 /**
- * @brief Probe the bus for an OV2640. On success fills sensor->id.
+ * @brief Probe the bus for an OV7725. On success fills sensor->id.
  * @return 0 if detected
  */
-int ov2640_detect(sensor_t *sensor);
+int ov7725_detect(sensor_t *sensor);
 
 /**
  * @brief Fill sensor_t function pointers and write the default register set.
  * @return 0 on success
  */
-int ov2640_init_sensor(sensor_t *sensor);
+int ov7725_init_sensor(sensor_t *sensor);
 
 #ifdef __cplusplus
 }

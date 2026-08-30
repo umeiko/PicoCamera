@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 #include "pico_camera.h"
 
 #include <stdlib.h>
@@ -17,7 +25,10 @@
 #include "sensors/ov2640.h"
 #include "sensors/ov3660.h"
 #include "sensors/ov7670.h"
+#include "sensors/ov7725.h"
 #include "sensors/gc2145.h"
+#include "sensors/gc0308.h"
+#include "sensors/gc032a.h"
 
 // Debug output: set to 1 for verbose logging on stdio
 #define PICOCAM_DEBUG 0
@@ -49,8 +60,20 @@ static const camera_sensor_info_t s_info_ov7670 = {
     "OV7670", OV7670_SCCB_ADDR, OV7670_PID, FRAMESIZE_VGA, false  // no JPEG encoder
 };
 
+static const camera_sensor_info_t s_info_ov7725 = {
+    "OV7725", OV7725_SCCB_ADDR, OV7725_PID, FRAMESIZE_VGA, false  // no JPEG encoder
+};
+
 static const camera_sensor_info_t s_info_gc2145 = {
     "GC2145", GC2145_SCCB_ADDR, GC2145_PID, FRAMESIZE_UXGA, false  // no JPEG encoder
+};
+
+static const camera_sensor_info_t s_info_gc0308 = {
+    "GC0308", GC0308_SCCB_ADDR, GC0308_PID, FRAMESIZE_VGA, false  // no JPEG encoder
+};
+
+static const camera_sensor_info_t s_info_gc032a = {
+    "GC032A", GC032A_SCCB_ADDR, GC032A_PID, FRAMESIZE_VGA, false  // no JPEG encoder
 };
 
 static const sensor_entry_t s_sensors[] = {
@@ -58,6 +81,14 @@ static const sensor_entry_t s_sensors[] = {
     { &s_info_ov3660, ov3660_detect, ov3660_init_sensor },
     { &s_info_ov7670, ov7670_detect, ov7670_init_sensor },
     { &s_info_gc2145, gc2145_detect, gc2145_init_sensor },
+    // OV7670/OV7725/GC032A/GC0308 all share SCCB address 0x21; the PIDs are
+    // distinct (0x76 / 0x77 / 0x232A / 0x9B), and OV7725's bank-select write
+    // (0xFF=0x01) is harmless to the others.
+    { &s_info_ov7725, ov7725_detect, ov7725_init_sensor },
+    // GC032A reads its 0xF0/0xF1 chip ID first (unambiguous), then GC0308
+    // (reg 0x00 == 0x9B).
+    { &s_info_gc032a, gc032a_detect, gc032a_init_sensor },
+    { &s_info_gc0308, gc0308_detect, gc0308_init_sensor },
 };
 
 // ---------------------------------------------------------------------------
@@ -89,6 +120,8 @@ static size_t frame_bytes_for(pixformat_t fmt, framesize_t fs) {
     size_t h = resolution[fs].height;
     switch (fmt) {
     case PIXFORMAT_RGB565: return w * h * 2;
+    case PIXFORMAT_YUV422: return w * h * 2;
+    case PIXFORMAT_GRAYSCALE: return w * h;
     case PIXFORMAT_JPEG:   return w * h / 4 + 8192;  // upper bound estimate
     default: return 0;
     }

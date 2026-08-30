@@ -16,30 +16,30 @@ A camera library for RP2040 with an API aligned with [esp32-camera](https://gith
 
 ## Supported sensors
 
-Sensor list aligned with [esp32-camera](https://github.com/espressif/esp32-camera); the last column shows PicoCamera's current support status:
+Sensor list aligned with [esp32-camera](https://github.com/espressif/esp32-camera) (datasheet output-format wording normalized, e.g. YCbCr422 → YUV422, compression → JPEG); the last column shows PicoCamera's current support status:
 
 | model   | max resolution | color type | output format                                                | PicoCamera support |
 | ------- | -------------- | ---------- | ------------------------------------------------------------ | ------------------ |
-| OV2640  | 1600 x 1200    | color      | YUV(422/420)/YCbCr422<br>RGB565/555<br>8-bit compressed data<br>8/10-bit Raw RGB data |  RGB565<br>JPEG |
-| OV3660  | 2048 x 1536    | color      | raw RGB data<br/>RGB565/555/444<br/>CCIR656<br/>YCbCr422<br/>compression | RGB565<br>JPEG |
-| OV5640  | 2592 x 1944    | color      | RAW RGB<br/>RGB565/555/444<br/>CCIR656<br/>YUV422/420<br/>YCbCr422<br/>compression | ❌ Not supported yet |
-| OV7670  | 640 x 480      | color      | Raw Bayer RGB<br/>Processed Bayer RGB<br>YUV/YCbCr422<br>GRB422<br>RGB565/555 |  RGB565  |
-| OV7725  | 640 x 480      | color      | Raw RGB<br/>GRB 422<br/>RGB565/555/444<br/>YCbCr 422         | ❌ Not supported yet |
-| NT99141 | 1280 x 720     | color      | YCbCr 422<br/>RGB565/555/444<br/>Raw<br/>CCIR656<br/>JPEG compression | ❌ Not supported yet |
-| GC032A  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | ❌ Not supported yet |
-| GC0308  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565<br/>Grayscale          | ❌ Not supported yet |
-| GC2145  | 1600 x 1200    | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | RGB565 |
-| BF3005  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>RGB565                        | ❌ Not supported yet |
-| BF20A6  | 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer<br/>Only Y                        | ❌ Not supported yet |
-| SC101IOT| 1280 x 720     | color      | YUV/YCbCr422<br/>Raw RGB                                     | ❌ Not supported yet |
-| SC030IOT| 640 x 480      | color      | YUV/YCbCr422<br/>RAW Bayer                                   | ❌ Not supported yet |
-| SC031GS | 640 x 480      | monochrome | RAW MONO<br/>Grayscale                                       | ❌ Not supported yet |
-| HM0360  | 656 x 496      | monochrome | RAW MONO<br/>Grayscale                                       | ❌ Not supported yet |
-| HM1055  | 1280 x 720     | color      | 8/10-bit Raw<br/>YUV/YCbCr422<br/>RGB565/555/444             | ❌ Not supported yet |
+| OV2640  | 1600 x 1200    | color      | YUV422/420<br>RGB565/555<br>JPEG<br>RAW RGB (8/10-bit) |  RGB565<br>YUV422<br>JPEG |
+| OV3660  | 2048 x 1536    | color      | RAW RGB<br>RGB565/555/444<br>CCIR656<br>YUV422<br>JPEG | RGB565<br>YUV422<br>JPEG |
+| OV5640  | 2592 x 1944    | color      | RAW RGB<br>RGB565/555/444<br>CCIR656<br>YUV422/420<br>JPEG | ❌ Not supported yet |
+| OV7670  | 640 x 480      | color      | RAW Bayer<br>Processed Bayer<br>YUV422<br>GRB422<br>RGB565/555 |  RGB565<br>YUV422  |
+| OV7725  | 640 x 480      | color      | RAW RGB<br>GRB422<br>RGB565/555/444<br>YUV422         | RGB565 (untested) |
+| NT99141 | 1280 x 720     | color      | YUV422<br>RGB565/555/444<br>RAW<br>CCIR656<br>JPEG | ❌ Not supported yet |
+| GC032A  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565                        | RGB565 (untested) |
+| GC0308  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565<br>Grayscale          | RGB565<br>YUV422<br>Grayscale |
+| GC2145  | 1600 x 1200    | color      | YUV422<br>RAW Bayer<br>RGB565                        | RGB565<br>YUV422 |
+| BF3005  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>RGB565                        | ❌ Not supported yet |
+| BF20A6  | 640 x 480      | color      | YUV422<br>RAW Bayer<br>Y-only                        | ❌ Not supported yet |
+| SC101IOT| 1280 x 720     | color      | YUV422<br>RAW RGB                                     | ❌ Not supported yet |
+| SC030IOT| 640 x 480      | color      | YUV422<br>RAW Bayer                                   | ❌ Not supported yet |
+| SC031GS | 640 x 480      | monochrome | RAW MONO<br>Grayscale                                       | ❌ Not supported yet |
+| HM0360  | 656 x 496      | monochrome | RAW MONO<br>Grayscale                                       | ❌ Not supported yet |
+| HM1055  | 1280 x 720     | color      | RAW (8/10-bit)<br>YUV422<br>RGB565/555/444             | ❌ Not supported yet |
 
 All supported sensors also expose `set_reg`/`get_reg`-style raw register access; more sensor controls are ported on demand.
 
-**Requesting JPEG on a sensor without a JPEG encoder** (e.g. OV7670, GC2145) makes `pico_camera_init()` fail with `PICO_CAMERA_ERR_NOT_SUPPORTED` — same behavior as esp32-camera. A `frame_size` beyond the sensor's maximum is clamped to the maximum with a warning instead of failing.
+**Requesting JPEG on a sensor without a JPEG encoder** (e.g. OV7670, GC2145, GC0308, GC032A) makes `pico_camera_init()` fail with `PICO_CAMERA_ERR_NOT_SUPPORTED` — same behavior as esp32-camera. A `frame_size` beyond the sensor's maximum is clamped to the maximum with a warning instead of failing.
 
 ## Installation
 

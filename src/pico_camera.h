@@ -1,3 +1,11 @@
+/*
+ * This file is part of the PicoCamera project.
+ * https://github.com/umeiko/PicoCamera
+ *
+ * Author: umeko <umeko@stu.xmu.edu.cn>
+ * License: MIT
+ */
+
 /**
  * @file pico_camera.h
  * @brief PicoCamera main API, aligned with esp32-camera's esp_camera.h.
@@ -54,17 +62,38 @@ typedef int pico_camera_err_t;
 #define PICO_CAMERA_ERR_FAILED_TO_SET_FRAME_SIZE  (PICO_CAMERA_ERR_BASE - 2)
 #define PICO_CAMERA_ERR_FAILED_TO_SET_OUT_FORMAT  (PICO_CAMERA_ERR_BASE - 3)
 
+/**
+ * @brief Human-readable description of a pico_camera error code.
+ *
+ * Handy for logging: Serial.printf("init failed: %s\n", pico_camera_err_str(err));
+ */
+static inline const char *pico_camera_err_str(pico_camera_err_t err) {
+    switch (err) {
+    case PICO_CAMERA_OK:                           return "OK";
+    case PICO_CAMERA_FAIL:                         return "generic failure";
+    case PICO_CAMERA_ERR_NO_MEM:                   return "out of memory (frame buffer allocation failed)";
+    case PICO_CAMERA_ERR_INVALID_ARG:              return "invalid argument (check pins, pixel_format, frame_size)";
+    case PICO_CAMERA_ERR_INVALID_STATE:            return "invalid state (camera already initialized)";
+    case PICO_CAMERA_ERR_NOT_SUPPORTED:            return "not supported (e.g. JPEG on a sensor without a JPEG encoder)";
+    case PICO_CAMERA_ERR_TIMEOUT:                  return "timeout";
+    case PICO_CAMERA_ERR_NOT_DETECTED:             return "no sensor detected on the SCCB bus (check wiring/power)";
+    case PICO_CAMERA_ERR_FAILED_TO_SET_FRAME_SIZE: return "failed to set frame size";
+    case PICO_CAMERA_ERR_FAILED_TO_SET_OUT_FORMAT: return "failed to set output format";
+    default:                                       return "unknown error";
+    }
+}
+
 /* Library version, kept in sync with library.properties / library.json.
  * When a copy installed from the Library Manager overrides a (possibly older)
  * copy bundled with the Arduino core, these macros describe the copy the
  * sketch actually compiled against. */
 #define PICO_CAMERA_VERSION_MAJOR   0
 #define PICO_CAMERA_VERSION_MINOR   4
-#define PICO_CAMERA_VERSION_PATCH   1
+#define PICO_CAMERA_VERSION_PATCH   2
 #define PICO_CAMERA_VERSION_HEX     ((PICO_CAMERA_VERSION_MAJOR << 16) | \
                                      (PICO_CAMERA_VERSION_MINOR << 8) |  \
                                      PICO_CAMERA_VERSION_PATCH)
-#define PICO_CAMERA_VERSION_STRING  "0.4.1"
+#define PICO_CAMERA_VERSION_STRING  "0.4.2"
 
 /**
  * @brief Frame buffer location
@@ -120,7 +149,7 @@ typedef struct {
     //< (pin_sccb_sda == -1) this selects which
     //< already-initialized bus to reuse
 
-    pixformat_t pixel_format;       //< PIXFORMAT_RGB565 or PIXFORMAT_JPEG
+    pixformat_t pixel_format;       //< PIXFORMAT_RGB565, PIXFORMAT_YUV422 or PIXFORMAT_JPEG
     framesize_t frame_size;         //< FRAMESIZE_*
 
     int jpeg_quality;               //< 0-63, lower means higher quality (JPEG only)
